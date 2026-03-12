@@ -1,0 +1,112 @@
+{
+  "projectType": "saas",
+  "projectName": "TradeMaster Transactions (TMT)",
+  "projectDescription": "A comprehensive event ticketing and management platform for venues, promoters, and customers",
+  "theme": "almond",
+  "primaryColor": "#6366F1",
+  "lightColor": "#818CF8",
+  "darkColor": "#4F46E5",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "architecture"
+            ]
+          },
+          {
+            "group": "Core Features",
+            "pages": [
+              "features/user-management",
+              "features/event-management",
+              "features/ticket-sales",
+              "features/payment-processing",
+              "features/office-operations"
+            ]
+          },
+          {
+            "group": "User Guides",
+            "pages": [
+              "guides/managing-users",
+              "guides/creating-events",
+              "guides/configuring-venues",
+              "guides/processing-tickets",
+              "guides/financial-operations"
+            ]
+          },
+          {
+            "group": "Administration",
+            "pages": [
+              "admin/authentication",
+              "admin/permissions",
+              "admin/contracts",
+              "admin/reconciliation",
+              "admin/platform-settings"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "api/overview",
+              "api/authentication"
+            ]
+          },
+          {
+            "group": "State Management",
+            "pages": [
+              "api/redux-store",
+              "api/slices"
+            ]
+          },
+          {
+            "group": "Components",
+            "pages": [
+              "api/components/user-components",
+              "api/components/event-components",
+              "api/components/transaction-components"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Multi-role user management (Staff, Clients, Collaborators, Customers)",
+    "Event and venue management with zone configuration",
+    "Ticket sales and search functionality",
+    "Contract and addendum management",
+    "Payment processing and payout management",
+    "Box office operations and offline ticket sales",
+    "Transaction reconciliation and financial reporting",
+    "Marketing campaign management",
+    "Customer portals for white-label solutions",
+    "Role-based permissions with CASL",
+    "Firebase authentication integration",
+    "Redux state management with persistence"
+  ],
+  "publicApiSurface": [
+    "Authentication (Login, Register, Password Reset)",
+    "User Management (Staff, Clients, Collaborators, Customers)",
+    "Event Management (Create, Edit, Configure Zones)",
+    "Venue Management (Event Venues, Offices)",
+    "Ticket Operations (Search, Validate, Display)",
+    "Contract Management (Contracts, Addendums)",
+    "Financial Operations (Transactions, Payouts, Reconciliation)",
+    "Order Management (Orders, Order Payouts)",
+    "Payment Methods (Create, Edit, View)",
+    "Custody Accounts Management",
+    "Marketing Campaigns",
+    "Customer Portals Management",
+    "Document Management (Bank and Company Documents)"
+  ]
+}
