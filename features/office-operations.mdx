@@ -1,0 +1,645 @@
+---
+title: Office Operations
+description: Manage physical and virtual box offices for ticket sales
+icon: building
+---
+
+## Overview
+
+Office Operations in TradeMaster Transactions allows you to create and manage box offices (taquillas) where tickets are sold. Box offices can be physical locations with operating hours or virtual offices for online sales. Each office has assigned collaborators, payment methods, and access to specific events.
+
+<Note>
+  Box offices are the primary sales channels in TMT. They connect collaborators, payment methods, and events to enable ticket transactions.
+</Note>
+
+## Office Types
+
+<CardGroup cols={2}>
+  <Card title="Physical Office" icon="building">
+    Brick-and-mortar location with scheduled operating hours. Ideal for walk-up ticket sales and in-person customer service.
+  </Card>
+  <Card title="Virtual Office" icon="globe">
+    Online sales channel operating 24/7. Connects to web portals and mobile apps for digital ticket purchases.
+  </Card>
+</CardGroup>
+
+## Accessing Office Management
+
+<Steps>
+  <Step title="Navigate to Offices">
+    From the main menu, go to **Taquillas** > **Lista de Taquillas**
+  </Step>
+  <Step title="View Office Table">
+    The table displays all box offices with their type, status, and client association
+  </Step>
+  <Step title="Search and Filter">
+    Use the search bar to find offices by name, type, or status
+  </Step>
+</Steps>
+
+## Creating a Box Office
+
+<Steps>
+  <Step title="Click Create Office">
+    Click the **Crear Taquilla** button in the top-right corner
+  </Step>
+  
+  <Step title="Enter Basic Information">
+    Fill in the office details:
+    
+    ```javascript
+    {
+      name: "Main Box Office",
+      office_type: "Physical", // or "Virtual"
+      status: true,
+      client: {
+        name: "Client Name",
+        client_id: "client_123"
+      }
+    }
+    ```
+  </Step>
+  
+  <Step title="Configure Address">
+    Provide the office location details:
+    
+    ```javascript
+    address: {
+      country: { name: "United States", code: "US" },
+      city: "Los Angeles",
+      zipcode: "90001",
+      line: "123 Main Street, Suite 100"
+    }
+    ```
+  </Step>
+  
+  <Step title="Assign Payment Methods">
+    Select which payment methods this office can accept:
+    - Credit/Debit Cards
+    - Cash
+    - Bank Transfers
+    - Digital Wallets
+  </Step>
+  
+  <Step title="Add Collaborators">
+    Assign team members to work at this office:
+    - **Taquilleros**: Ticket sellers
+    - **Administradores**: Office managers and supervisors
+  </Step>
+  
+  <Step title="Set Operating Hours (Physical Offices Only)">
+    Configure the schedule for each day of the week with opening and closing times
+  </Step>
+  
+  <Step title="Save and Activate">
+    Click **Guardar** to create the office and make it operational
+  </Step>
+</Steps>
+
+<Warning>
+  At least one collaborator must be assigned as an administrator to manage office operations.
+</Warning>
+
+## Office Configuration Details
+
+### Required Fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| Name | Text | Yes | Display name for the office |
+| Type | Dropdown | Yes | Physical or Virtual |
+| Country | Dropdown | Yes | Country location |
+| City | Text | Yes | City location |
+| Zipcode | Text | Yes | Postal code |
+| Address Line | Text Area | Yes | Complete street address |
+| Payment Methods | Multi-select | Yes | Available payment options |
+| Collaborators | Multi-select | Yes | Assigned ticket sellers |
+| Administrators | Multi-select | Yes | Office managers |
+| Client | Dropdown | Yes | Owner/producer organization |
+
+### Office Data Structure
+
+```javascript
+// Complete office configuration
+{
+  id: "office_123",
+  name: "Main Box Office",
+  office_type: "Physical",
+  status: true,
+  client: {
+    name: "TradeMaster Transactions",
+    client_id: "TMT"
+  },
+  address: {
+    country: { name: "United States", code: "US" },
+    city: "Los Angeles",
+    zipcode: "90001",
+    line: "123 Main Street, Suite 100"
+  },
+  contact: {
+    name: "John Smith",
+    email: "john@example.com",
+    phone: "+1 555-0123"
+  },
+  manager: {
+    name: "Jane Doe",
+    email: "jane@example.com",
+    phone: "+1 555-0124"
+  },
+  date: {
+    created: "2024-01-15T10:00:00",
+    updated: ""
+  },
+  schedules: [
+    {
+      day: "Lunes",
+      timeslot: { from: "09:00 am", to: "06:00 pm" }
+    },
+    // ... other days
+  ]
+}
+```
+
+## Contact and Manager Information
+
+### Primary Contact
+
+The first collaborator assigned automatically becomes the primary contact:
+
+```javascript
+contact: {
+  name: values.collaborators[0].value.name,
+  email: values.collaborators[0].value.email,
+  phone: values.collaborators[0].value.phone
+}
+```
+
+### Office Manager
+
+The first administrator assigned becomes the office manager:
+
+```javascript
+manager: {
+  name: values.administrators[0].value.name,
+  email: values.administrators[0].value.email,
+  phone: values.administrators[0].value.phone
+}
+```
+
+<Tip>
+  The contact and manager information is displayed in reports and used for notifications about office operations.
+</Tip>
+
+## Managing Office Schedules
+
+For physical offices, configure operating hours for each day of the week:
+
+### Schedule Configuration
+
+<Steps>
+  <Step title="Select Active Days">
+    Check the checkbox for each day the office is open
+  </Step>
+  
+  <Step title="Set Opening Time">
+    Use the time picker to select when the office opens
+  </Step>
+  
+  <Step title="Set Closing Time">
+    Select when the office closes for the day
+  </Step>
+  
+  <Step title="Repeat for All Days">
+    Configure hours for Monday through Sunday
+  </Step>
+</Steps>
+
+### Schedule Examples
+
+<CodeGroup>
+```javascript Weekday Schedule
+{
+  day: "Lunes",
+  timeslot: {
+    from: "09:00 am",
+    to: "06:00 pm"
+  }
+}
+```
+
+```javascript Weekend Schedule
+{
+  day: "Sábado",
+  timeslot: {
+    from: "10:00 am",
+    to: "08:00 pm"
+  }
+}
+```
+
+```javascript Closed Day
+{
+  day: "Domingo",
+  timeslot: {
+    from: null,
+    to: null
+  }
+}
+```
+</CodeGroup>
+
+<Note>
+  Virtual offices don't have schedules since they operate 24/7 for online sales.
+</Note>
+
+## Assigning Collaborators
+
+Collaborators are the team members who work at the office:
+
+### Collaborator Roles
+
+<Accordion title="Taquillero (Ticket Seller)">
+  Front-line staff who process ticket sales:
+  - Search for available tickets
+  - Process customer payments
+  - Generate tickets and receipts
+  - Handle basic customer inquiries
+  
+  **Permissions**: Can sell tickets, view inventory, process payments
+</Accordion>
+
+<Accordion title="Administrador (Administrator)">
+  Supervisors who manage office operations:
+  - Oversee ticket sellers
+  - Generate sales reports
+  - Manage daily cash reconciliation
+  - Handle customer issues and refunds
+  
+  **Permissions**: All ticket seller permissions plus reporting and management
+</Accordion>
+
+<Accordion title="Jefe de Taquilla (Office Manager)">
+  Senior managers with full control:
+  - Configure office settings
+  - Assign collaborators
+  - Manage payment methods
+  - Access all financial data
+  
+  **Permissions**: All administrator permissions plus configuration access
+</Accordion>
+
+### Assignment Process
+
+```javascript
+// When creating an office, collaborators are assigned
+values.collaborators.forEach(async (user) => {
+  // Create bidirectional relationship
+  await Firestore.collection(`offices/${officeId}/collaborators`)
+    .doc(user.value.uid)
+    .set({ name: user.value.name, status: true });
+  
+  await Firestore.collection(`u_collaborators/${user.value.uid}/offices`)
+    .doc(officeId)
+    .set({ name: officeName, status: true, office_type: officeType });
+});
+```
+
+<Tip>
+  Collaborators must have an active account and be assigned to the same client organization as the office.
+</Tip>
+
+## Payment Method Configuration
+
+Offices need assigned payment methods to process transactions:
+
+### Adding Payment Methods to Office
+
+```javascript
+// Payment method assignment
+values.payments_methods.forEach(async (payment) => {
+  await Firestore.collection(`offices/${officeId}/payment_methods`).add({
+    currency: payment.value.currency,
+    name: payment.value.name,
+    payment_method_id: payment.value.id,
+    custody_account: payment.value.custody_account,
+    method: payment.value.method,
+    percentage: 0 // Office-specific fee adjustment
+  });
+});
+```
+
+### Payment Method Properties
+
+| Property | Description |
+|----------|-------------|
+| **name** | Display name (e.g., "Credit Card - Visa") |
+| **currency** | Supported currency (USD, MXN, etc.) |
+| **custody_account** | Bank account for deposits |
+| **method** | Payment type (card, cash, transfer) |
+| **percentage** | Office-specific fee or discount |
+
+## Office Operations Dashboard
+
+When collaborators log in, they see their assigned office dashboard:
+
+### Active Office View
+
+<CardGroup cols={2}>
+  <Card title="Available Events" icon="calendar">
+    List of events with tickets available for sale at this office
+  </Card>
+  <Card title="Today's Sales" icon="chart-line">
+    Real-time sales statistics for the current day
+  </Card>
+  <Card title="Active Collaborators" icon="users">
+    Team members currently working at the office
+  </Card>
+  <Card title="Cash Drawer" icon="cash-register">
+    Current cash balance and transaction log
+  </Card>
+</CardGroup>
+
+### Selling Tickets from Office
+
+<Steps>
+  <Step title="Select Event">
+    Choose the event from the available events list
+  </Step>
+  
+  <Step title="Search for Tickets">
+    Browse available tickets by zone, price, or seat number
+  </Step>
+  
+  <Step title="Add to Order">
+    Select one or more tickets to add to the current order
+  </Step>
+  
+  <Step title="Choose Payment Method">
+    Select from the payment methods assigned to this office
+  </Step>
+  
+  <Step title="Process Payment">
+    Complete the transaction and generate tickets
+  </Step>
+  
+  <Step title="Print/Send Tickets">
+    Print physical tickets or send digital tickets via email/SMS
+  </Step>
+</Steps>
+
+## Office Status Management
+
+<CardGroup cols={2}>
+  <Card title="Active Status" icon="circle-check" color="#2ecc71">
+    Office is operational and can process sales. Collaborators can log in and sell tickets.
+  </Card>
+  <Card title="Inactive Status" icon="circle-xmark" color="#e74c3c">
+    Office is closed. Cannot process sales or access the system. Used for temporary closures or decommissioned offices.
+  </Card>
+</CardGroup>
+
+### Activating/Deactivating Offices
+
+<Steps>
+  <Step title="Open Office Details">
+    Click on the office from the offices list
+  </Step>
+  <Step title="Toggle Status">
+    Use the status switch to activate or deactivate
+  </Step>
+  <Step title="Confirm Change">
+    Confirm the status change in the dialog
+  </Step>
+</Steps>
+
+<Warning>
+  Deactivating an office immediately prevents all collaborators from processing sales at that location. Active transactions may be interrupted.
+</Warning>
+
+## Offices Table Interface
+
+The offices table provides an overview of all box offices:
+
+### Table Features
+
+<Accordion title="Search and Filter">
+  - **Global Search**: Find offices by name, type, or client
+  - **Column Sorting**: Click headers to sort by any field
+  - **Status Filter**: Show only active or inactive offices
+</Accordion>
+
+<Accordion title="Export Data">
+  Click the download icon to export office data as CSV:
+  
+  ```csv
+  Name,Type,Status,Client,City,Created Date
+  Main Box Office,Physical,Active,Client Name,Los Angeles,2024-01-15
+  Virtual Sales Portal,Virtual,Active,Client Name,Online,2024-01-20
+  ```
+</Accordion>
+
+<Accordion title="Pagination">
+  Navigate large office lists:
+  - 10, 15, or 20 offices per page
+  - First/Last page navigation
+  - Current page indicator
+</Accordion>
+
+### Table Columns
+
+| Column | Description |
+|--------|-------------|
+| **Name** | Office display name |
+| **Type** | Physical or Virtual |
+| **Status** | Active (green) or Inactive (red) |
+| **Actions** | View details icon |
+
+## Office Detail View
+
+Click on any office to view comprehensive details:
+
+### Information Tabs
+
+<Steps>
+  <Step title="General Information">
+    - Office name, type, and status
+    - Address and contact details
+    - Client/producer association
+    - Creation and update dates
+  </Step>
+  
+  <Step title="Collaborators">
+    - List of assigned ticket sellers
+    - Administrator assignments
+    - Contact information for each
+    - Status and permissions
+  </Step>
+  
+  <Step title="Payment Methods">
+    - Available payment options
+    - Custody account associations
+    - Processing fees
+    - Currency support
+  </Step>
+  
+  <Step title="Schedule (Physical Only)">
+    - Weekly operating hours
+    - Open and closed days
+    - Holiday schedule overrides
+  </Step>
+  
+  <Step title="Sales Statistics">
+    - Total sales for the office
+    - Top selling events
+    - Payment method breakdown
+    - Performance metrics
+  </Step>
+  
+  <Step title="Transactions">
+    - Recent orders processed
+    - Transaction history
+    - Daily sales reports
+    - Cash reconciliation records
+  </Step>
+</Steps>
+
+## Offline Ticket Sales
+
+Physical offices can process offline sales when internet connectivity is unavailable:
+
+### Offline Mode
+
+<Steps>
+  <Step title="Enable Offline Mode">
+    System detects loss of connectivity and switches to offline mode
+  </Step>
+  
+  <Step title="Access Local Cache">
+    Ticket inventory and event data are cached locally
+  </Step>
+  
+  <Step title="Process Sales Locally">
+    Transactions are recorded locally with temporary IDs
+  </Step>
+  
+  <Step title="Sync When Online">
+    When connection is restored, all offline transactions sync to the server
+  </Step>
+</Steps>
+
+<Note>
+  Offline mode supports cash transactions only. Card payments require active internet connection.
+</Note>
+
+## Sales Reports
+
+Generate reports for office performance:
+
+### Available Reports
+
+<Accordion title="Daily Sales Report">
+  Total sales for a specific day including:
+  - Total revenue
+  - Number of tickets sold
+  - Payment method breakdown
+  - Collaborator performance
+  - Hourly sales trends
+</Accordion>
+
+<Accordion title="Office Performance Report">
+  Compare sales across all offices:
+  - Revenue by office
+  - Tickets sold per office
+  - Average transaction size
+  - Peak operating hours
+</Accordion>
+
+<Accordion title="Collaborator Report">
+  Individual performance metrics:
+  - Sales by collaborator
+  - Average transaction time
+  - Customer service ratings
+  - Accuracy and error rates
+</Accordion>
+
+<Accordion title="Cash Reconciliation Report">
+  Balance cash drawer with system records:
+  - Opening balance
+  - Cash sales total
+  - Expected closing balance
+  - Actual closing balance
+  - Variance and discrepancies
+</Accordion>
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Strategic Location" icon="location-dot">
+    Place physical offices in high-traffic areas near event venues
+  </Card>
+  <Card title="Adequate Staffing" icon="users">
+    Assign enough collaborators to handle peak sales periods
+  </Card>
+  <Card title="Multiple Payment Options" icon="credit-card">
+    Enable diverse payment methods to accommodate all customers
+  </Card>
+  <Card title="Regular Training" icon="graduation-cap">
+    Train collaborators on system usage and customer service
+  </Card>
+  <Card title="Daily Reconciliation" icon="scale-balanced">
+    Balance cash drawers and reconcile sales daily
+  </Card>
+  <Card title="Monitor Performance" icon="chart-line">
+    Review office reports weekly to optimize operations
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+<Accordion title="Collaborator cannot access office">
+  1. Verify the collaborator is assigned to the office
+  2. Check that both collaborator and office status are "Active"
+  3. Confirm the collaborator account type matches required roles
+  4. Verify the collaborator is assigned to the correct client
+  5. Check that office schedules are configured (for physical offices)
+</Accordion>
+
+<Accordion title="Payment method not available">
+  1. Check that payment method is assigned to the office
+  2. Verify payment method status is "Active"
+  3. Ensure currency matches ticket prices
+  4. Confirm custody account is properly configured
+  5. Check payment gateway credentials (for online payments)
+</Accordion>
+
+<Accordion title="Cannot create office">
+  1. Ensure all required fields are completed
+  2. Verify at least one collaborator and administrator are selected
+  3. Check that at least one payment method is assigned
+  4. Confirm the client account is active
+  5. Verify you have permission to create offices
+</Accordion>
+
+<Accordion title="Schedule not saving">
+  1. Ensure opening time is before closing time
+  2. Check that day checkboxes are selected
+  3. Verify time format is correct (12-hour with AM/PM)
+  4. For virtual offices, schedule is not required
+</Accordion>
+
+## Related Features
+
+<CardGroup cols={2}>
+  <Card title="User Management" icon="users" href="/features/user-management">
+    Create and manage collaborators to assign to offices
+  </Card>
+  <Card title="Payment Processing" icon="credit-card" href="/features/payment-processing">
+    Configure payment methods for office use
+  </Card>
+  <Card title="Ticket Sales" icon="ticket" href="/features/ticket-sales">
+    Process ticket sales through configured offices
+  </Card>
+  <Card title="Event Management" icon="calendar" href="/features/event-management">
+    Link events to offices for ticket sales
+  </Card>
+</CardGroup>

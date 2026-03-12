@@ -1,0 +1,292 @@
+---
+title: User Management
+description: Manage clients, collaborators, and staff users across your TradeMaster platform
+icon: users
+---
+
+## Overview
+
+TradeMaster Transactions provides comprehensive user management capabilities to help you organize and control access across your event ticketing operations. The platform supports multiple user types including clients, collaborators, and staff members, each with distinct roles and permissions.
+
+<Note>
+  User management in TMT is role-based, ensuring that each user type has access only to the features and data relevant to their responsibilities.
+</Note>
+
+## User Types
+
+<CardGroup cols={3}>
+  <Card title="Clients" icon="building">
+    Event producers and organizations that create and manage events on the platform.
+  </Card>
+  <Card title="Collaborators" icon="user-group">
+    Team members including ticket sellers, administrators, and office managers.
+  </Card>
+  <Card title="Customers" icon="ticket">
+    End users who purchase tickets and attend events.
+  </Card>
+</CardGroup>
+
+## Managing Clients
+
+Clients are the primary account holders who produce and manage events. They can create multiple events, manage box offices, and oversee all ticketing operations.
+
+### Accessing the Clients List
+
+<Steps>
+  <Step title="Navigate to Users">
+    From the main navigation menu, go to **Users** > **Clients**
+  </Step>
+  <Step title="View Client Table">
+    The client list displays all registered clients with their current status, last access date, and email
+  </Step>
+  <Step title="Search and Filter">
+    Use the search bar to find specific clients by name or email. Click the filter icon for advanced filtering options
+  </Step>
+</Steps>
+
+### Creating a New Client
+
+<Steps>
+  <Step title="Click Create User">
+    From the Clients list, click the **Crear Usuario** button in the top-right corner
+  </Step>
+  <Step title="Enter Client Information">
+    Fill in the required fields:
+    - Full name
+    - Email address
+    - Contact information
+    - Company/Organization details
+  </Step>
+  <Step title="Set Initial Status">
+    Choose whether the client account should be active immediately or remain inactive until verified
+  </Step>
+  <Step title="Save and Notify">
+    Click **Guardar** to create the account. The client will receive login credentials via email
+  </Step>
+</Steps>
+
+<Warning>
+  Ensure email addresses are accurate before creating client accounts, as they serve as the primary login credential and communication channel.
+</Warning>
+
+### Client Profile Details
+
+When you click on a client from the list, you can view:
+
+- **Account Information**: Name, email, account type, and status
+- **Last Access**: Date and time of most recent login
+- **Events**: All events created by this client
+- **Box Offices**: Associated physical and virtual ticket offices
+- **Activity History**: Timeline of important account actions
+
+## Managing Collaborators
+
+Collaborators are team members who work within your organization. They include ticket sellers (taquilleros), administrators, and office managers.
+
+### Collaborator Roles
+
+<Accordion title="Taquillero (Ticket Seller)">
+  Front-line staff who process ticket sales at box offices. They can:
+  - Search for and sell tickets
+  - Process payments using assigned payment methods
+  - View ticket availability and pricing
+  - Generate sales reports for their shift
+</Accordion>
+
+<Accordion title="Administrador (Administrator)">
+  Supervisors who manage operations across multiple offices. They can:
+  - Oversee multiple box offices
+  - Manage collaborator assignments
+  - Generate comprehensive reports
+  - Configure office settings and schedules
+</Accordion>
+
+<Accordion title="Jefe de Taquilla (Office Manager)">
+  Senior managers with full operational control. They can:
+  - Create and configure box offices
+  - Assign collaborators to offices
+  - Manage payment methods and financial settings
+  - Access all reporting and analytics
+</Accordion>
+
+### Adding Collaborators
+
+<Steps>
+  <Step title="Access Collaborators Section">
+    Navigate to **Users** > **Collaborators** from the main menu
+  </Step>
+  <Step title="Click Create User">
+    Click the **Crear Usuario** button to open the new collaborator form
+  </Step>
+  <Step title="Enter Personal Information">
+    Provide the collaborator's:
+    - Full name
+    - Email address
+    - Phone number
+    - Account type (role)
+  </Step>
+  <Step title="Assign to Client">
+    Select the client organization this collaborator will work for
+  </Step>
+  <Step title="Set Status and Save">
+    Mark the account as active and click **Guardar** to create the collaborator profile
+  </Step>
+</Steps>
+
+### Viewing Collaborator Details
+
+Click on any collaborator from the list to view:
+
+```javascript
+// Example collaborator data structure
+{
+  name: "Juan Pérez",
+  email: "juan.perez@example.com",
+  phone: "+52 555 1234567",
+  account_type: "Taquillero",
+  status: true,
+  client: {
+    name: "TradeMaster Transactions",
+    client_id: "TMT"
+  },
+  date: {
+    created: "2024-01-15",
+    last_access: "2024-03-12 10:30:00"
+  }
+}
+```
+
+- **Assigned Offices**: All box offices where this collaborator is authorized
+- **Recent Activity**: Recent sales transactions and actions
+- **Performance Metrics**: Sales totals and ticket counts (for ticket sellers)
+- **Schedule**: Working hours and assigned shifts
+
+## User Status Management
+
+All users in TMT have a status indicator that affects their access:
+
+<CardGroup cols={2}>
+  <Card title="Active Status" icon="circle-check" color="#2ecc71">
+    User can log in and perform all authorized actions. Displayed with a green indicator.
+  </Card>
+  <Card title="Inactive Status" icon="circle-xmark" color="#e74c3c">
+    User account is disabled. Cannot log in or access the platform. Displayed with a red indicator.
+  </Card>
+</CardGroup>
+
+### Activating or Deactivating Users
+
+<Steps>
+  <Step title="Open User Details">
+    Click on the user from the clients or collaborators list
+  </Step>
+  <Step title="Toggle Status">
+    Use the status toggle switch to activate or deactivate the account
+  </Step>
+  <Step title="Confirm Change">
+    Confirm the status change in the dialog that appears
+  </Step>
+</Steps>
+
+<Warning>
+  Deactivating a user immediately revokes their access to the platform. Active sessions will be terminated on their next action.
+</Warning>
+
+## User Table Features
+
+The user management tables provide powerful tools for managing large user bases:
+
+### Search and Filter
+
+- **Global Search**: Type in the search bar to find users by name, email, or account type
+- **Column Sorting**: Click any column header to sort users by that field
+- **Quick Filters**: Use the filter icon to apply predefined filters
+
+### Bulk Actions
+
+<Tip>
+  Export user data to CSV for external reporting and analysis. Click the download icon in the table header.
+</Tip>
+
+```bash
+# Exported CSV includes:
+Name,Email,Account Type,Status,Last Access,Created Date
+```
+
+### Pagination Controls
+
+Navigate through large user lists efficiently:
+
+- **First/Last Page**: Jump to the beginning or end of the list
+- **Previous/Next**: Move one page at a time
+- **Rows Per Page**: Select 10, 15, or 20 users per page
+- **Page Indicator**: Shows "Del {first} al {last} de {total}" (From X to Y of Total)
+
+## Permissions and Access Control
+
+TMT uses CASL (Capability-based Access Control) to manage permissions:
+
+```javascript
+// Example: Permission check for creating clients
+<Can I="create" a="usersClients" ability={ability}>
+  <Button onClick={handleClickCreate}>
+    Crear Usuario
+  </Button>
+</Can>
+```
+
+Permissions are automatically enforced:
+- UI elements are hidden if the user lacks permission
+- API calls are validated server-side
+- Role-based access is inherited from the user's account type
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Regular Audits" icon="clipboard-check">
+    Review user lists monthly to identify and deactivate unused accounts
+  </Card>
+  <Card title="Accurate Information" icon="circle-info">
+    Keep contact information up to date for all users to ensure effective communication
+  </Card>
+  <Card title="Role Assignment" icon="user-tag">
+    Assign the minimum necessary role for each collaborator to maintain security
+  </Card>
+  <Card title="Status Monitoring" icon="eye">
+    Monitor last access dates to identify inactive accounts that should be deactivated
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+<Accordion title="User can't log in">
+  1. Verify the account status is "Active"
+  2. Check that the email address is correct
+  3. Confirm the user has received their login credentials
+  4. Check if the account is assigned to the correct client organization
+</Accordion>
+
+<Accordion title="Collaborator not visible in office assignment">
+  1. Verify the collaborator's account is active
+  2. Confirm they are assigned to the correct client
+  3. Check that their account_type matches the required role for the office
+  4. Ensure they haven't already been assigned to another office
+</Accordion>
+
+<Accordion title="Cannot create new users">
+  1. Check your permissions using the user menu
+  2. Verify you have "create" permission for the user type
+  3. Ensure all required fields in the form are completed
+  4. Check for duplicate email addresses in the system
+</Accordion>
+
+## Related Features
+
+<CardGroup cols={2}>
+  <Card title="Office Operations" icon="building" href="/features/office-operations">
+    Assign collaborators to box offices and manage their schedules
+  </Card>
+  <Card title="Event Management" icon="calendar" href="/features/event-management">
+    Link client accounts to their events and manage permissions
+  </Card>
+</CardGroup>

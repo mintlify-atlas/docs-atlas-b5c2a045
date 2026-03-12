@@ -1,0 +1,580 @@
+---
+title: 'Transaction Components'
+description: 'React components for managing transactions, orders, payments, and payouts in TradeMaster Transactions'
+---
+
+## Overview
+
+The Transaction Components library provides comprehensive React components for managing financial transactions, orders, payment methods, and payout accounts in the TradeMaster Transactions platform.
+
+## TransactionsTable
+
+A data table component for displaying and managing financial transactions with search and filter capabilities.
+
+### Props
+
+This component doesn't accept props as it connects directly to Redux state and uses authentication context.
+
+### Features
+
+- **User-filtered Transactions**: Automatically filters by authenticated user
+- **Event Association**: Links transactions to specific events
+- **Payment Method Display**: Shows payment method used
+- **Office/Terminal Tracking**: Displays which office/terminal processed the transaction
+- **Amount Formatting**: Currency-formatted transaction amounts
+- **Search Functionality**: Global search across event name, payment method, and office
+- **Theme-aware Styling**: Dark mode support with custom table styles
+
+### Usage Example
+
+```jsx
+import TransactionsTable from 'src/components/apps/transactions/TransactionsTable';
+import { Provider } from 'react-redux';
+import store from 'src/store/Store';
+
+function TransactionsPage() {
+  return (
+    <Provider store={store}>
+      <TransactionsTable />
+    </Provider>
+  );
+}
+```
+
+### Data Structure
+
+```typescript
+interface Transaction {
+  id: string;
+  event_name: string;
+  payment_name: string;
+  office_name: string;
+  amount: number;
+  created: Timestamp;
+}
+```
+
+### Columns
+
+| Column | Field | Sortable | Description |
+|--------|-------|----------|-------------|
+| Nombre del Evento | `event_name` | ✓ | Event name with transfer icon |
+| Método de Pago | `payment_name` | ✓ | Payment method used |
+| Taquilla | `office_name` | ✓ | Office/terminal name |
+| Monto | `amount` | - | Formatted currency amount |
+| Acciones | - | - | View details button |
+
+### Styling
+
+The component includes custom table styling:
+
+```jsx
+const tableStyles = {
+  '& .p-datatable': {
+    borderRadius: '12px',
+    overflow: 'hidden',
+    boxShadow: 'none',
+  },
+  '& .p-datatable-thead > tr > th': {
+    background: theme.palette.mode === 'dark' 
+      ? theme.palette.background.default 
+      : '#f5f7fa',
+    padding: '12px 16px',
+    fontWeight: 600,
+  },
+};
+```
+
+---
+
+## OrdersTable
+
+Comprehensive data table for managing customer orders with status tracking.
+
+### Props
+
+This component doesn't accept props as it connects directly to Redux state.
+
+### Features
+
+- **Order Status**: Visual status badges (Activo/Inactivo)
+- **Event Association**: Links orders to events
+- **Amount Display**: Order total with currency formatting
+- **Status Styling**: Color-coded status indicators with blur effects
+- **User Filtering**: Filters orders by authenticated user
+- **Search & Filter**: Global search functionality
+- **Pagination**: Configurable rows per page
+
+### Usage Example
+
+```jsx
+import OrdersTable from 'src/components/apps/orders/ordersTable';
+
+function OrdersPage() {
+  return <OrdersTable />;
+}
+```
+
+### Data Structure
+
+```typescript
+interface Order {
+  id: string;
+  event_name: string;
+  amount: number;
+  status: boolean;
+  created: Timestamp;
+}
+```
+
+### Status Template
+
+The component includes a custom status display:
+
+```jsx
+const statusTemplate = (rowData) => {
+  const isActive = rowData.status === "Activo";
+  return (
+    <Box
+      display="flex"
+      alignItems="center"
+      sx={{
+        backgroundColor: isActive 
+          ? 'rgba(76, 175, 80, 0.1)'
+          : 'rgba(244, 67, 54, 0.1)',
+        padding: '4px 10px',
+        borderRadius: '20px',
+        boxShadow: isActive
+          ? '0 2px 4px rgba(76, 175, 80, 0.2)'
+          : '0 2px 4px rgba(244, 67, 54, 0.2)',
+        backdropFilter: 'blur(4px)'
+      }}
+    >
+      <Box
+        sx={{
+          backgroundColor: isActive
+            ? theme.palette.success.main
+            : theme.palette.error.main,
+          borderRadius: '100%',
+          height: '6px',
+          width: '6px',
+          marginRight: '6px'
+        }}
+      />
+      <Typography
+        variant="caption"
+        sx={{
+          color: isActive
+            ? theme.palette.success.dark
+            : theme.palette.error.dark,
+          fontWeight: 600,
+        }}
+      >
+        {rowData.status}
+      </Typography>
+    </Box>
+  );
+};
+```
+
+### Columns
+
+| Column | Field | Sortable |
+|--------|-------|----------|
+| Nombre del Evento | `event_name` | ✓ |
+| Monto | `amount` | ✓ |
+| Estatus | `status` | - |
+| Acciones | - | - |
+
+---
+
+## PayoutTable
+
+Manages payout accounts with currency and type information.
+
+### Props
+
+This component doesn't accept props but uses query parameters for filtering.
+
+### Features
+
+- **Payout Account Management**: Display payout account details
+- **Currency Display**: Shows account currency
+- **Account Type**: Displays payout account type
+- **Status Indicators**: Active/Inactive status badges
+- **CSV Export**: Export payout data
+- **Create Functionality**: Add new payout accounts
+- **Search & Filter**: Global search across account properties
+
+### Usage Example
+
+```jsx
+import PayoutTable from 'src/components/apps/payout/PayoutTable';
+
+function PayoutsPage() {
+  return <PayoutTable />;
+}
+```
+
+### Data Structure
+
+```typescript
+interface Payout {
+  id: string;
+  name: string;
+  type: string;
+  status: boolean;
+  currency: {
+    name: string;
+    symbol: string;
+  };
+}
+```
+
+### Columns
+
+| Column | Field | Sortable |
+|--------|-------|----------|
+| Nombre | `name` | ✓ |
+| Tipo | `type` | ✓ |
+| Moneda | `currency` | ✓ |
+| Estatus | `status` | - |
+
+### Export Functionality
+
+```jsx
+const dt = React.useRef(null);
+
+const exportC = (selectionOnly) => {
+  dt.current.exportCSV({ selectionOnly });
+};
+
+<Tooltip title="Descargar CSV">
+  <IconButton onClick={() => exportC(false)}>
+    <IconDownload />
+  </IconButton>
+</Tooltip>
+```
+
+---
+
+## PaymentMethodTable
+
+Manages payment methods available in the system.
+
+### Props
+
+This component doesn't accept props as it connects directly to Redux state.
+
+### Features
+
+- **Payment Method Types**: Displays method type (cash, card, transfer, etc.)
+- **Currency Support**: Shows supported currency for each method
+- **Wallet Icons**: Visual icons for payment methods
+- **Status Management**: Active/Inactive status tracking
+- **Create New Methods**: Add payment methods with permissions
+- **Search Functionality**: Filter payment methods
+
+### Usage Example
+
+```jsx
+import PaymentMethodTable from 'src/components/apps/payment-method/PaymentMethodTable';
+
+function PaymentMethodsPage() {
+  return <PaymentMethodTable />;
+}
+```
+
+### Data Structure
+
+```typescript
+interface PaymentMethod {
+  id: string;
+  name: string;
+  type: string;
+  currency: string;
+  status: boolean;
+}
+```
+
+### Name Template
+
+The component includes a custom name display with icon:
+
+```jsx
+import { IconWallet } from '@tabler/icons';
+
+const nameTemplate = (rowData) => (
+  <Box display="flex" alignItems="center">
+    <IconWallet stroke={1.5} size="2rem" />
+    <Box sx={{ ml: 2 }}>
+      <Typography variant="h6" fontWeight="600">
+        {rowData.name}
+      </Typography>
+      <Typography color="textSecondary" variant="subtitle2">
+        {rowData.type}
+      </Typography>
+    </Box>
+  </Box>
+);
+```
+
+### Columns
+
+| Column | Field | Sortable |
+|--------|-------|----------|
+| Nombre Método de Pago | `name` | ✓ |
+| Moneda | `currency` | ✓ |
+| Estatus | `status` | ✓ |
+| Acciones | - | - |
+
+---
+
+## Common Transaction Patterns
+
+### Amount Formatting
+
+Consistent currency formatting across transaction components:
+
+```jsx
+const formatAmount = (amount) => {
+  return `$${amount.toFixed(2)}`;
+};
+
+// Usage in column
+<Column 
+  field="amount" 
+  header="Monto" 
+  body={(row) => <Typography>{formatAmount(row.amount)}</Typography>} 
+/>
+```
+
+### Redux Integration
+
+Transaction components use Redux for state management:
+
+```jsx
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchTransactions } from 'src/store/apps/transactions/transactionsSlice';
+
+const dispatch = useDispatch();
+const user = useSelector((state) => state.auth.user);
+const transactions = useSelector((state) => state.Transactions.Transactions);
+
+React.useEffect(() => {
+  dispatch(fetchTransactions(user.uid));
+}, [dispatch]);
+```
+
+### Filter Configuration
+
+Standard filter setup for DataTables:
+
+```jsx
+import { FilterMatchMode } from 'primereact/api';
+
+const [filters, setFilters] = React.useState({
+  global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+  event_name: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
+  amount: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
+});
+
+const onGlobalFilterChange = (e) => {
+  const value = e.target.value;
+  let _filters = { ...filters };
+  _filters['global'].value = value;
+  setFilters(_filters);
+};
+```
+
+### Navigation to Details
+
+Consistent pattern for navigating to detail pages:
+
+```jsx
+import { useNavigate } from 'react-router';
+
+const navigate = useNavigate();
+
+const handleClickDetail = (event, id) => {
+  navigate(`/transacciones-detalle?id=${id}`);
+};
+
+// In action column
+const actionsTemplate = (rowData) => (
+  <Tooltip title="Visualizar">
+    <IconButton onClick={(event) => handleClickDetail(event, rowData.id)}>
+      <IconEye size="1.1rem" />
+    </IconButton>
+  </Tooltip>
+);
+```
+
+---
+
+## Icon Usage
+
+Transaction components use consistent icons:
+
+```jsx
+import {
+  IconTransferIn,  // For transactions
+  IconWallet,      // For payment methods
+  IconSearch,      // For search functionality
+  IconEye,         // For view actions
+  IconDownload,    // For CSV export
+  IconPlus         // For create actions
+} from '@tabler/icons';
+```
+
+---
+
+## Theme-aware Styling
+
+All components support dark/light themes:
+
+```jsx
+import { useTheme } from '@mui/material';
+
+const theme = useTheme();
+
+const customStyles = {
+  backgroundColor: theme.palette.mode === 'dark'
+    ? 'rgba(255, 255, 255, 0.05)'
+    : 'rgba(0, 0, 0, 0.02)',
+  color: theme.palette.primary.main,
+  '&:hover': {
+    backgroundColor: theme.palette.mode === 'dark'
+      ? 'rgba(255, 255, 255, 0.1)'
+      : 'rgba(0, 0, 0, 0.08)',
+  }
+};
+```
+
+---
+
+## Search Implementation
+
+Standard search header pattern:
+
+```jsx
+const renderHeader = () => {
+  return (
+    <Box display="flex" justifyContent="start">
+      <CustomTextField 
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <IconSearch size={20} />
+            </InputAdornment>
+          ),
+        }} 
+        value={globalFilterValue} 
+        onChange={onGlobalFilterChange} 
+        placeholder="Buscar"
+        sx={{
+          '& .MuiOutlinedInput-root': {
+            borderRadius: '12px',
+          }
+        }}
+      />
+    </Box>
+  );
+};
+```
+
+---
+
+## Loading States
+
+Components manage loading states for better UX:
+
+```jsx
+const [loading, setLoading] = React.useState(true);
+
+React.useEffect(() => {
+  setLoading(true);
+  dispatch(fetchTransactions(user.uid));
+}, [dispatch]);
+
+React.useEffect(() => {
+  setRows(getTransactions ?? []);
+  setTotalRecords((getTransactions ?? []).length);
+  setLoading(false);
+}, [getTransactions]);
+
+<DataTable
+  loading={loading}
+  emptyMessage="No se encontraron transacciones."
+  // ... other props
+/>
+```
+
+---
+
+## Pagination Configuration
+
+Standard pagination setup:
+
+```jsx
+<DataTable
+  paginator
+  rows={10}
+  rowsPerPageOptions={[10, 15, 20]}
+  paginatorTemplate="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
+  currentPageReportTemplate="Del {first} al {last} de {totalRecords}"
+  totalRecords={totalRecords}
+  // ... other props
+/>
+```
+
+---
+
+## Error Handling
+
+Components include empty state handling:
+
+```jsx
+<DataTable
+  value={rows}
+  emptyMessage="No se encontraron transacciones con estos parámetros."
+  // ... other props
+/>
+```
+
+---
+
+## Integration Example
+
+Complete integration example with all transaction components:
+
+```jsx
+import React from 'react';
+import { Box, Tab, Tabs } from '@mui/material';
+import TransactionsTable from 'src/components/apps/transactions/TransactionsTable';
+import OrdersTable from 'src/components/apps/orders/ordersTable';
+import PayoutTable from 'src/components/apps/payout/PayoutTable';
+import PaymentMethodTable from 'src/components/apps/payment-method/PaymentMethodTable';
+
+function FinancialDashboard() {
+  const [tab, setTab] = React.useState(0);
+  
+  return (
+    <Box>
+      <Tabs value={tab} onChange={(e, newValue) => setTab(newValue)}>
+        <Tab label="Transacciones" />
+        <Tab label="Órdenes" />
+        <Tab label="Métodos de Pago" />
+        <Tab label="Cuentas de Pago" />
+      </Tabs>
+      
+      {tab === 0 && <TransactionsTable />}
+      {tab === 1 && <OrdersTable />}
+      {tab === 2 && <PaymentMethodTable />}
+      {tab === 3 && <PayoutTable />}
+    </Box>
+  );
+}
+
+export default FinancialDashboard;
+```

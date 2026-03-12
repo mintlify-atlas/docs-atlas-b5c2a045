@@ -1,0 +1,505 @@
+---
+title: 'Financial Reconciliation'
+description: 'Reconcile bank transactions and company records in TradeMaster Transactions'
+icon: 'calculator'
+---
+
+## Overview
+
+The reconciliation system in TradeMaster Transactions helps you match bank transactions with company records to ensure financial accuracy. This feature is critical for accounting teams to verify that all ticket sales, refunds, and payments are properly recorded and accounted for.
+
+## Reconciliation Architecture
+
+### Key Components
+
+<CardGroup cols={2}>
+  <Card title="Bank Documents" icon="building-columns">
+    Transaction records imported from bank statements
+  </Card>
+  <Card title="Company Documents" icon="briefcase">
+    Internal transaction records from TMT system
+  </Card>
+  <Card title="Custody Accounts" icon="vault">
+    Bank accounts used for holding customer funds
+  </Card>
+  <Card title="Conciliation Data" icon="arrows-left-right">
+    Matched and reconciled transaction pairs
+  </Card>
+</CardGroup>
+
+## Database Structure
+
+### Custody Accounts
+
+Custody accounts represent the bank accounts that hold customer funds:
+
+```json
+{
+  "name": "Banco Provincial - VEF Digital",
+  "country": "ve",
+  "currency": "VEF",
+  "type": "digital",
+  "metadata": {
+    "account_number": "01020123456789",
+    "bank_name": "Banco Provincial",
+    "account_type": "Checking"
+  },
+  "status": "active",
+  "date": {
+    "created": Timestamp,
+    "updated": Timestamp
+  }
+}
+```
+
+### Conciliated Records
+
+Reconciled transactions are stored with details from both sources:
+
+```json
+{
+  "fecha": "2024-03-12",
+  "no_docu": "ND-12345",
+  "tipo_doc": "ND",
+  "monto": 150000.00,
+  "event_name": "Concert XYZ",
+  "custody_account": "01020123456789",
+  "reconciled": true,
+  "date_reconciled": Timestamp
+}
+```
+
+## Reconciliation Process
+
+<Steps>
+  <Step title="Select Custody Account">
+    Choose the bank account you want to reconcile from the dropdown.
+  </Step>
+  
+  <Step title="Set Date Range">
+    Define the period for reconciliation (default is last 31 days).
+  </Step>
+  
+  <Step title="Fetch Transactions">
+    System retrieves bank and company transactions for the selected period.
+  </Step>
+  
+  <Step title="Automatic Matching">
+    TMT automatically matches transactions based on amount, date, and reference number.
+  </Step>
+  
+  <Step title="Manual Review">
+    Review unmatched transactions and manually reconcile if needed.
+  </Step>
+  
+  <Step title="Approve Reconciliation">
+    Confirm and save the reconciliation results.
+  </Step>
+</Steps>
+
+## Viewing Reconciled Data
+
+### Conciliated Table Component
+
+The main reconciliation view shows matched transactions:
+
+```javascript ConciliatedTable.js
+import { conciliation_data } from '../../../guards/firebase/Firebase';
+
+const getData = async ({ id, dateFrom, dateTo }) => {
+  const accountNumber = id.metadata.account_number;
+  
+  const params = {
+    num_cta: accountNumber,
+    from: moment(dateFrom).format("YYYY-MM-DD"),
+    to: moment(dateTo).format("YYYY-MM-DD")
+  };
+  
+  const response = await conciliation_data(params);
+  
+  if (response.data?.valido) {
+    setRows(response.data.response);
+  }
+};
+```
+
+### Table Columns
+
+The reconciliation table displays:
+
+| Column | Description | Format |
+|--------|-------------|--------|
+| Fecha | Transaction date | DD/MM/YYYY |
+| N° Documento | Document/reference number | Text |
+| Tipo de Documento | Document type | ND (Debit Note) / NC (Credit Note) |
+| Monto | Transaction amount | Currency formatted (VES) |
+| Event Name | Associated event (if applicable) | Text |
+
+## Document Types
+
+### Nota de Débito (ND)
+
+Debit notes represent money leaving the account:
+- Refunds to customers
+- Transfers to clients
+- Bank fees
+- Chargebacks
+
+### Nota de Crédito (NC)
+
+Credit notes represent money entering the account:
+- Ticket sales deposits
+- Customer payments
+- Bank corrections
+- Interest earned
+
+### Type Template
+
+```javascript
+const typeTemplate = (display) => {
+  return (
+    <Typography>
+      {display === "ND" ? "Nota de Débito" : "Nota de Crédito"}
+    </Typography>
+  );
+};
+```
+
+## Currency Formatting
+
+### Venezuelan Bolívar (VES)
+
+Transactions are formatted using the Venezuelan currency standard:
+
+```javascript
+const formatter = new Intl.NumberFormat('es-VE', {
+  style: 'currency',
+  currency: 'VES',
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+// Usage
+formatter.format(150000.00); // Bs. 150.000,00
+```
+
+## Unreconciled Transactions
+
+### Bank Transactions (Not Reconciled)
+
+View bank transactions that haven't been matched with company records:
+
+```javascript
+import { noconciliation_data_b } from '../../../guards/firebase/Firebase';
+
+const getUnreconciledBank = async (params) => {
+  const response = await noconciliation_data_b(params);
+  return response.data.response;
+};
+```
+
+### Company Transactions (Not Reconciled)
+
+View company records that haven't been matched with bank transactions:
+
+```javascript
+import { noconciliation_data_cia } from '../../../guards/firebase/Firebase';
+
+const getUnreconciledCompany = async (params) => {
+  const response = await noconciliation_data_cia(params);
+  return response.data.response;
+};
+```
+
+## Manual Reconciliation
+
+### Uploading Bank Documents
+
+Import bank statements manually when automatic sync isn't available:
+
+```javascript
+import { conciliation_load_bank_manual } from '../../../guards/firebase/Firebase';
+
+const uploadBankDocument = async (file, accountNumber) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('account', accountNumber);
+  
+  const response = await conciliation_load_bank_manual(formData);
+  return response;
+};
+```
+
+### Uploading Company Documents
+
+Import internal transaction records:
+
+```javascript
+import { conciliation_load_cia_manual } from '../../../guards/firebase/Firebase';
+
+const uploadCompanyDocument = async (file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  const response = await conciliation_load_cia_manual(formData);
+  return response;
+};
+```
+
+## Search and Filtering
+
+### Global Search
+
+Search across all fields:
+
+```javascript
+const [filters, setFilters] = useState({
+  global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+});
+
+const onGlobalFilterChange = (e) => {
+  const value = e.target.value;
+  let _filters = { ...filters };
+  _filters['global'].value = value;
+  setFilters(_filters);
+};
+```
+
+### Date Range Filtering
+
+```javascript
+const [from, setFrom] = useState(new Date().setDate(to.getDate() - 31));
+const [to, setTo] = useState(new Date());
+
+<CustomDatePicker
+  value={dayjs(from)}
+  maxDate={dayjs(new Date())}
+  onChange={(newDate) => {
+    setFrom(newDate.toDate());
+    getData({ dateFrom: newDate.toDate() });
+  }}
+/>
+```
+
+## Export Capabilities
+
+### CSV Export
+
+Export reconciliation data for external analysis:
+
+```javascript
+const dt = useRef(null);
+
+const exportCSV = (selectionOnly) => {
+  dt.current.exportCSV({ selectionOnly });
+};
+
+<IconButton onClick={() => exportCSV(false)}>
+  <IconDownload />
+</IconButton>
+```
+
+## Reconciliation Reports
+
+### Summary Metrics
+
+<Tabs>
+  <Tab title="Reconciliation Status">
+    - Total transactions processed
+    - Successfully reconciled count
+    - Unreconciled bank transactions
+    - Unreconciled company transactions
+    - Reconciliation percentage
+  </Tab>
+  
+  <Tab title="Financial Totals">
+    - Total debits (money out)
+    - Total credits (money in)
+    - Net balance
+    - Outstanding discrepancies
+    - Pending reconciliations
+  </Tab>
+  
+  <Tab title="Timing Analysis">
+    - Average reconciliation time
+    - Oldest unreconciled transaction
+    - Transactions by date range
+    - Monthly reconciliation trends
+  </Tab>
+</Tabs>
+
+## Cloud Functions
+
+TMT uses Firebase Cloud Functions for reconciliation processing:
+
+### Available Functions
+
+<CodeGroup>
+```javascript Reconciliation Data
+// Get reconciled transactions
+const conciliation_data = httpsCallable(functions, 'conciliation_data');
+
+const result = await conciliation_data({
+  num_cta: '01020123456789',
+  from: '2024-01-01',
+  to: '2024-03-12'
+});
+```
+
+```javascript Bank Data (Unreconciled)
+// Get unreconciled bank transactions
+const noconciliation_data_b = httpsCallable(functions, 'noconciliation_data_b');
+
+const result = await noconciliation_data_b({
+  num_cta: '01020123456789',
+  from: '2024-01-01',
+  to: '2024-03-12'
+});
+```
+
+```javascript Company Data (Unreconciled)
+// Get unreconciled company transactions
+const noconciliation_data_cia = httpsCallable(functions, 'noconciliation_data_cia');
+
+const result = await noconciliation_data_cia({
+  from: '2024-01-01',
+  to: '2024-03-12'
+});
+```
+</CodeGroup>
+
+## Access Control
+
+### Required Permissions
+
+Reconciliation features require specific permissions:
+
+- **Administrador**: Full access to all reconciliation features
+- **Contador**: Read-only access to view reconciliation data
+- **Coordinador**: Limited access to view client payouts
+- **Other roles**: No access to reconciliation
+
+```javascript
+// Permission check example
+if (!ability.can('view', 'ViewClientPayouts')) {
+  navigate('/auth/permissions');
+}
+```
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Daily Reconciliation" icon="calendar-day">
+    Reconcile transactions daily to catch discrepancies early and maintain accurate records.
+  </Card>
+  
+  <Card title="Document Everything" icon="file-lines">
+    Keep detailed notes on manual reconciliations and any discrepancies found.
+  </Card>
+  
+  <Card title="Regular Audits" icon="magnifying-glass-chart">
+    Perform weekly audits of reconciliation processes to ensure accuracy.
+  </Card>
+  
+  <Card title="Backup Data" icon="floppy-disk">
+    Export and backup reconciliation data regularly for compliance and disaster recovery.
+  </Card>
+</CardGroup>
+
+## Common Reconciliation Issues
+
+<AccordionGroup>
+  <Accordion title="Timing Differences">
+    **Issue**: Transaction appears in bank statement but not in company records, or vice versa.
+    
+    **Solution**: Check if transaction is pending or was processed in different accounting periods. Wait 24-48 hours for settlement.
+  </Accordion>
+  
+  <Accordion title="Amount Mismatches">
+    **Issue**: Bank amount differs from company record due to fees or exchange rates.
+    
+    **Solution**: Account for transaction fees separately. Check if currency conversion was applied. Document the difference.
+  </Accordion>
+  
+  <Accordion title="Missing Reference Numbers">
+    **Issue**: Cannot match transactions due to missing or incorrect reference numbers.
+    
+    **Solution**: Use combination of date + amount to manually match. Update records with correct reference numbers for future.
+  </Accordion>
+  
+  <Accordion title="Duplicate Entries">
+    **Issue**: Same transaction appears multiple times in bank or company records.
+    
+    **Solution**: Identify and flag duplicates. Verify with bank statements. Remove duplicate entries and note in audit log.
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+### No Data Returned
+
+```javascript
+if (!response.data?.valido) {
+  console.error('Invalid response from reconciliation API');
+  // Check:
+  // 1. Account number is correct
+  // 2. Date range is valid
+  // 3. Cloud function is deployed
+  // 4. User has proper permissions
+}
+```
+
+### Loading Issues
+
+```javascript
+const [loading, setLoading] = useState(false);
+
+try {
+  setLoading(true);
+  const response = await conciliation_data(params);
+  setRows(response.data.response);
+} catch (error) {
+  console.error('Reconciliation error:', error);
+  setRows([]);
+} finally {
+  setLoading(false);
+}
+```
+
+## Compliance and Auditing
+
+<Warning>
+  **Regulatory Requirements**
+  
+  - Maintain reconciliation records for required retention period (typically 7 years)
+  - Ensure all discrepancies are documented with explanations
+  - Implement segregation of duties (different people perform and review reconciliations)
+  - Regular management review of reconciliation processes
+</Warning>
+
+### Audit Trail
+
+All reconciliation actions should be logged:
+
+```javascript
+const logReconciliation = async (action, details) => {
+  await Firestore.collection('reconciliation_audit').add({
+    action: action,
+    user_id: currentUser.uid,
+    user_name: currentUser.name,
+    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+    details: details
+  });
+};
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Platform Settings" icon="gear" href="/admin/platform-settings">
+    Configure system-wide settings including exchange rates
+  </Card>
+  <Card title="Contracts" icon="file-contract" href="/admin/contracts">
+    Manage client contracts and agreements
+  </Card>
+</CardGroup>

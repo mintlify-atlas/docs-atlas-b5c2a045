@@ -1,0 +1,414 @@
+---
+title: 'Permission System'
+description: 'Implement role-based access control using CASL in TradeMaster Transactions'
+icon: 'key'
+---
+
+## Overview
+
+TradeMaster Transactions uses **CASL** (Conditional Ability Language) for fine-grained, role-based access control (RBAC). This system allows you to define precise permissions for different user roles, controlling access to specific features, views, and actions throughout the platform.
+
+## CASL Architecture
+
+### Core Components
+
+<CardGroup cols={2}>
+  <Card title="AbilityContext" icon="network-wired">
+    React context that provides ability instances to components throughout the app.
+  </Card>
+  <Card title="DefineAbilities" icon="code">
+    Function that defines permissions based on user account type.
+  </Card>
+  <Card title="PermissionGuard" icon="shield">
+    Component that protects routes and UI elements based on permissions.
+  </Card>
+  <Card title="Ability Builder" icon="wrench">
+    CASL's fluent API for defining what users can and cannot do.
+  </Card>
+</CardGroup>
+
+## Permission Structure
+
+### Ability Definition
+
+Permissions are defined in `guards/contexts/DefineAbilities.js`:
+
+```javascript
+import { AbilityBuilder, Ability } from '@casl/ability';
+
+export function defineAbilitiesFor(user) {
+  const { can, cannot, build } = new AbilityBuilder(Ability);
+  
+  if (!user) {
+    return build(); // No permissions for unauthenticated users
+  }
+  
+  // Define role-based permissions
+  if (user.account_type === 'Administrador') {
+    can('manage', 'all'); // Full access
+  }
+  
+  return build();
+}
+```
+
+### Permission Syntax
+
+Permissions follow the pattern: `can(action, subject)`
+
+- **Action**: What operation can be performed (e.g., 'create', 'read', 'edit', 'view')
+- **Subject**: What resource the action applies to (e.g., 'events', 'contracts', 'usersStaff')
+
+## Role-Based Permissions
+
+### Administrator
+
+Administrators have full platform access:
+
+```javascript
+if (user.account_type === 'Administrador') {
+  can('manage', 'all');
+}
+```
+
+<Info>
+  The `manage all` permission grants unrestricted access to all platform features.
+</Info>
+
+### Cliente (Client)
+
+Clients have full access to manage their own events and resources:
+
+```javascript
+if (user.account_type === 'Cliente') {
+  can('manage', 'all');
+}
+```
+
+### Coordinador (Coordinator)
+
+Coordinators have extensive permissions for event management but limited administrative access:
+
+<Tabs>
+  <Tab title="Can Perform">
+    **User Management**
+    - Create and edit client users
+    - Create and edit collaborator users
+    - View staff details (cannot create/edit)
+    
+    **Event Management**
+    - Create and edit events
+    - Manage event pre-staging (pre-montaje)
+    - Create and read event tickets
+    - Manage event credentials
+    
+    **Contract Management**
+    - View contract details
+    - Create contracts and addendums
+    - View addendum details
+    
+    **Venue Management**
+    - Create and view event venues
+    
+    **Office Management**
+    - View and manage ticket offices
+    - View office sales data
+    
+    **Customer Management**
+    - View customer details, tickets, and orders
+  </Tab>
+  
+  <Tab title="Cannot Perform">
+    - Create or edit staff users
+    - Change event or ticket status
+    - Access payout information
+  </Tab>
+</Tabs>
+
+### Contador (Accountant)
+
+Accountants have read-only access focused on financial data:
+
+<AccordionGroup>
+  <Accordion title="Permitted Actions">
+    - View client details
+    - Read contract and addendum details
+    - Access platform settings
+    - View event details
+    - Search and view tickets
+    - View client payouts
+  </Accordion>
+  
+  <Accordion title="Restricted Actions">
+    - Cannot create or modify users (staff, clients, collaborators)
+    - Cannot create or edit events
+    - Cannot create contracts or addendums
+    - Cannot manage event venues
+    - Cannot change event or ticket status
+    - No access to event configuration or ticket generation
+  </Accordion>
+</AccordionGroup>
+
+### Soporte (Support)
+
+Support staff have limited access focused on customer assistance:
+
+**Can Access:**
+- View client and collaborator details
+- View event details and configurations
+- Search and view tickets
+- View event credentials (read-only)
+- View event venue details
+- Access event pre-staging information
+
+**Cannot Access:**
+- Staff, client, or collaborator management
+- Contract creation or viewing
+- Platform settings
+- Event or ticket status changes
+- Payout information
+- Event creation or credential generation
+
+## Implementation
+
+### Setting Up Abilities
+
+Initialize the ability context in your app:
+
+```javascript App.jsx
+import { AbilityContext } from './guards/contexts/AbilityContext';
+import { defineAbilitiesFor } from './guards/contexts/DefineAbilities';
+import { useSelector } from 'react-redux';
+
+function App() {
+  const user = useSelector((state) => state.auth.user);
+  const ability = defineAbilitiesFor(user);
+  
+  return (
+    <AbilityContext.Provider value={ability}>
+      {/* Your app components */}
+    </AbilityContext.Provider>
+  );
+}
+```
+
+### Using Permission Guards
+
+Protect routes and components with the `PermissionGuard`:
+
+```javascript guards/authGuard/PermissionGuard.js
+import React from "react";
+import { useNavigate } from 'react-router-dom';
+import { AbilityContext } from "../contexts/AbilityContext";
+
+const PermissionGuard = ({ children, action, subject }) => {
+  const ability = React.useContext(AbilityContext);
+  const navigate = useNavigate();
+  
+  React.useEffect(() => {
+    if (!ability.can(action, subject)) {
+      navigate("/auth/permissions", { replace: true });
+    }
+  }, [navigate]);
+  
+  return children;
+};
+```
+
+### Protecting Routes
+
+```javascript
+import PermissionGuard from './guards/authGuard/PermissionGuard';
+
+<Route
+  path="/contracts/create"
+  element={
+    <PermissionGuard action="view" subject="ViewContractsCreate">
+      <CreateContractPage />
+    </PermissionGuard>
+  }
+/>
+```
+
+### Conditional UI Rendering
+
+Hide or show UI elements based on permissions:
+
+```javascript
+import { useContext } from 'react';
+import { AbilityContext } from './guards/contexts/AbilityContext';
+
+function EventActions() {
+  const ability = useContext(AbilityContext);
+  
+  return (
+    <div>
+      {ability.can('create', 'events') && (
+        <Button>Create Event</Button>
+      )}
+      {ability.can('edit', 'events') && (
+        <Button>Edit Event</Button>
+      )}
+      {ability.can('change', 'eventsStatus') && (
+        <Button>Change Status</Button>
+      )}
+    </div>
+  );
+}
+```
+
+## Permission Reference
+
+### Common Permission Subjects
+
+| Subject | Description |
+|---------|-------------|
+| `usersStaff` | Staff user management |
+| `usersClients` | Client user management |
+| `usersCollaborators` | Collaborator user management |
+| `events` | Event creation and editing |
+| `eventsTickets` | Ticket generation and management |
+| `eventsCredentials` | Event credential management |
+| `contracts` | Contract creation |
+| `addendum` | Contract addendum creation |
+| `EventVenue` | Event venue management |
+
+### View Permissions
+
+View permissions control access to specific pages:
+
+<CodeGroup>
+```javascript User Management Views
+'ViewStaff'
+'ViewStaffDetail'
+'ViewStaffCreate'
+'ViewStaffEdit'
+'ViewClients'
+'ViewClientsDetail'
+'ViewClientsCreate'
+'ViewClientsEdit'
+'ViewCollaborators'
+'ViewCollaboratorsDetail'
+'ViewCollaboratorsCreate'
+'ViewCollaboratorsEdit'
+```
+
+```javascript Event Views
+'ViewEvents'
+'ViewEventsCreate'
+'ViewEventsConfig'
+'ViewEventsDetail'
+'ViewEventsCredentials'
+'ViewEventsCredentialsCreate'
+'ViewEventsConfigZone'
+'ViewEventsConfigSplit'
+```
+
+```javascript Contract Views
+'ViewContracts'
+'ViewContractsDetail'
+'ViewContractsCreate'
+'ViewAddendum'
+'ViewAddendumDetail'
+```
+
+```javascript Financial Views
+'ViewPayouts'
+'ViewClientPayouts'
+```
+</CodeGroup>
+
+## Custom Permission Logic
+
+### Adding New Roles
+
+To add a new role with custom permissions:
+
+```javascript DefineAbilities.js
+const commonPermissions = {
+  'NewRole': {
+    cannot: [
+      ['create', 'events'],
+      ['edit', 'contracts'],
+    ],
+    can: [
+      ['read', 'events'],
+      ['view', 'ViewEvents'],
+      ['view', 'ViewTickets'],
+    ]
+  }
+};
+
+if (commonPermissions[user.account_type]) {
+  const permissions = commonPermissions[user.account_type];
+  permissions.can?.forEach(([action, subject]) => can(action, subject));
+  permissions.cannot?.forEach(([action, subject]) => cannot(action, subject));
+}
+```
+
+## Security Best Practices
+
+<Warning>
+  **Important Security Considerations**
+  
+  - Always validate permissions on the backend as well as frontend
+  - Frontend permission checks are for UX only, not security
+  - Never expose sensitive data based solely on UI hiding
+  - Regularly audit role permissions for privilege creep
+  - Use the principle of least privilege
+</Warning>
+
+### Backend Validation
+
+Always enforce permissions server-side:
+
+```javascript
+// Firebase Cloud Functions example
+exports.createContract = functions.https.onCall(async (data, context) => {
+  // Verify user is authenticated
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated');
+  }
+  
+  // Verify user has permission
+  const userDoc = await admin.firestore()
+    .collection('u_clients')
+    .doc(context.auth.uid)
+    .get();
+  
+  const accountType = userDoc.data().account_type;
+  
+  if (!['Administrador', 'Cliente', 'Coordinador'].includes(accountType)) {
+    throw new functions.https.HttpsError('permission-denied', 'Insufficient permissions');
+  }
+  
+  // Proceed with contract creation
+});
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Permission Denied Redirect Loop">
+    Ensure the `/auth/permissions` route itself doesn't require permissions. This is the error page users are redirected to when they lack access.
+  </Accordion>
+  
+  <Accordion title="Permissions Not Updating After Role Change">
+    Permissions are calculated when abilities are defined. If a user's role changes, they need to log out and back in, or you need to manually update the ability context.
+  </Accordion>
+  
+  <Accordion title="User Has No Permissions">
+    Check that the user object is being passed correctly to `defineAbilitiesFor()` and that `user.account_type` matches one of the defined roles exactly (case-sensitive).
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Authentication" icon="shield-check" href="/admin/authentication">
+    Learn about authentication setup
+  </Card>
+  <Card title="Contracts" icon="file-contract" href="/admin/contracts">
+    Manage contracts and addendums
+  </Card>
+</CardGroup>

@@ -1,80 +1,335 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: 'Quickstart Guide'
+description: 'Get started with TradeMaster Transactions in minutes'
+icon: 'rocket'
 ---
 
-## Get started in three steps
+Welcome to TradeMaster Transactions (TMT)! This guide will help you set up your account and create your first event in minutes.
 
-Get your documentation site running locally and make your first customization.
+## What is TMT?
 
-### Step 1: Set up your local environment
+TradeMaster Transactions is a comprehensive event ticketing and management platform designed for event organizers, venues, and box offices. The platform enables you to:
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
+- Create and manage events with multiple ticket zones
+- Sell tickets through multiple channels (online portals and physical box offices)
+- Track transactions and generate detailed sales reports
+- Manage contracts, payouts, and financial reconciliation
+- Control access with role-based permissions
 
-### Step 2: Deploy your changes
+## Prerequisites
 
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
-
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
-
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 3: Go live
-
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
-
-## Next steps
-
-Now that you have your docs running, explore these key features:
+Before you begin, ensure you have:
 
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card title="Valid Account" icon="user">
+    An active TMT account with appropriate permissions
+  </Card>
+  <Card title="Firebase Credentials" icon="key">
+    Access to the Firebase authentication system
+  </Card>
 </CardGroup>
 
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>
+## Getting Started
+
+<Steps>
+  <Step title="Sign In to Your Account">
+    Navigate to the login page and authenticate with your credentials.
+
+    ```typescript
+    // Authentication is handled via Firebase
+    // src/views/authentication/authForms/AuthLogin.js:46-93
+    
+    const formik = useFormik({
+      initialValues: {
+        email: '',
+        password: '',
+      },
+      validationSchema: LoginSchema,
+      onSubmit: async (values) => {
+        // Validates user platform access
+        await validateUserPlatform({ 
+          platform: 'u_clients', 
+          email: values.email 
+        });
+        
+        // Signs in with Firebase
+        await signin(values.email, values.password);
+      }
+    });
+    ```
+
+    <Note>
+      Your account must be active (`status: true` in Firestore) and authorized for the `u_clients` platform to access the system.
+    </Note>
+
+    **Account Types Available:**
+    - **Administrador** - Full system access
+    - **Cliente** - Client account with event management capabilities
+    - **Coordinador** - Coordinator with limited administrative access
+    - **Contador** - Accountant with financial reporting access
+    - **Soporte** - Support staff with read-only access
+  </Step>
+
+  <Step title="Navigate the Dashboard">
+    After successful login, you'll be redirected to the modern dashboard at `/dashboards/modern`.
+
+    The dashboard displays:
+    - **Top Cards**: Sales metrics and ticket statistics
+    - **Yearly Breakup**: Ticket sales vs. available seats
+    - **Distribution Charts**: Money distribution across payment methods
+    - **Top Performers**: Sales breakdown by box office
+    - **Active Offices**: Office activity metrics
+
+    ```javascript
+    // Dashboard filters (src/views/dashboard/Modern.js:89-113)
+    const getData = async ({ id, dateFrom, dateTo }) => {
+      const parameters = { 
+        event_id: id ?? selectedEvent, 
+        from: moment(dateFrom ?? from).format("YYYY-MM-DD"), 
+        to: moment(dateTo ?? to).format("YYYY-MM-DD") 
+      };
+      
+      // Fetch dashboard metrics
+      await sold_by_office(parameters);
+      await money_distribution(parameters);
+      await number_tickets_vs_sold(parameters);
+      await offices_vs_offices_active(parameters);
+    }
+    ```
+
+    <Tip>
+      Use the filter panel at the top of the dashboard to analyze specific events or date ranges.
+    </Tip>
+  </Step>
+
+  <Step title="Create an Event Venue (Optional)">
+    Before creating an event, you may want to set up a venue. Navigate to **Salones de Eventos** → **Crear Salón**.
+
+    <Note>
+      This step is optional if your events don't require a physical venue or if venues are already configured.
+    </Note>
+
+    **Required Venue Information:**
+    - Venue name and description
+    - Location details (address, city, country)
+    - Capacity information
+    - Contact details
+  </Step>
+
+  <Step title="Create Your First Event">
+    Navigate to **Eventos** → **Crear Evento** or access `/eventos-crear` directly.
+
+    ### Basic Event Information
+
+    Fill out the event form with the following details:
+
+    ```javascript
+    // Event creation form structure (src/components/apps/events/NewEventForm.js)
+    const EventSchema = Yup.object().shape({
+      client_id: Yup.string().required('Cliente es requerido'),
+      event_name: Yup.string().required('Nombre del evento es requerido'),
+      event_type: Yup.string().required('Tipo de evento es requerido'),
+      venue_id: Yup.string().required('Salón es requerido'),
+      date_start: Yup.date().required('Fecha de inicio es requerida'),
+      date_end: Yup.date().required('Fecha de fin es requerida'),
+      contract_id: Yup.array().min(1, 'Debe seleccionar al menos un contrato'),
+    });
+    ```
+
+    **Event Fields:**
+
+    <CodeGroup>
+    ```json Event Data Structure
+    {
+      "event": {
+        "name": "Concert 2024",
+        "description": "Annual music festival",
+        "type": "Concierto"
+      },
+      "client_id": "uid_of_client",
+      "venue_id": "venue_document_id",
+      "date_start": "2024-06-15T19:00:00",
+      "date_end": "2024-06-15T23:00:00",
+      "status": "Pre-Montaje",
+      "contract_id": ["contract_id_1"],
+      "image": "https://storage.url/event-image.jpg"
+    }
+    ```
+
+    ```javascript Event Types Available
+    // Defined in platform setup configuration
+    const eventTypes = [
+      "Concierto",
+      "Teatro",
+      "Deportivo",
+      "Conferencia",
+      "Feria",
+      "Otro"
+    ];
+    ```
+    </CodeGroup>
+
+    <Warning>
+      Ensure you have an active contract associated with the client before creating an event. Events require at least one contract to be selected.
+    </Warning>
+  </Step>
+
+  <Step title="Configure Event Zones and Pricing">
+    After creating the event, configure ticket zones:
+
+    1. Navigate to your event details
+    2. Click **Configurar Evento** to access `/eventos-config`
+    3. Set up zones with pricing:
+
+    **Zone Configuration:**
+    - Zone name (e.g., "VIP", "General", "Balcony")
+    - Ticket capacity per zone
+    - Pricing per ticket
+    - Zone-specific rules or restrictions
+
+    <Tip>
+      You can split ticket inventory across different sales channels (online vs. box office) using the split configuration at `/eventos-config-split`.
+    </Tip>
+  </Step>
+
+  <Step title="Generate Tickets">
+    Once zones are configured, generate tickets for your event.
+
+    ```javascript
+    // Ticket generation via Firebase Cloud Function
+    // src/guards/firebase/Firebase.js:59
+    
+    const generateTickets = async (eventId) => {
+      const result = await tickets_generate({ 
+        event_id: eventId 
+      });
+      return result;
+    };
+    ```
+
+    The system will:
+    - Create unique ticket IDs for each seat
+    - Generate QR codes for ticket validation
+    - Assign tickets to the appropriate zones
+    - Make tickets available for sale
+
+    <Note>
+      Tickets are stored in the Firestore `tickets` collection with status tracking for availability and sales.
+    </Note>
+  </Step>
+
+  <Step title="Set Up Sales Channels">
+    Configure where tickets can be sold:
+
+    ### Online Portals
+    Navigate to **Portales** → **Crear Portal** to create a web portal:
+    - Portal name and URL
+    - Associated events
+    - Branding and customization
+    - Payment method configuration
+
+    ### Box Offices (Taquillas)
+    Navigate to **Taquillas** → **Crear Taquilla** to set up physical sales points:
+    - Office name and location
+    - Assigned collaborators
+    - Active events for sale
+    - PIN-based security for transactions
+
+    ```javascript
+    // Box office setup with PIN (src/guards/firebase/Firebase.js:62)
+    await office_pin_set({ 
+      office_id: officeId, 
+      pin: securePin 
+    });
+    ```
+  </Step>
+
+  <Step title="Activate Your Event">
+    Change the event status from "Pre-Montaje" to "Activo" to begin accepting ticket sales.
+
+    **Event Statuses:**
+    - **Pre-Montaje**: Setup phase, tickets not available for sale
+    - **Activo**: Event is live, tickets available for purchase
+    - **Finalizado**: Event completed, no more sales
+    - **Cancelado**: Event cancelled
+
+    <Warning>
+      Only users with the appropriate permissions can change event status. The `change:eventsStatus` permission is required.
+    </Warning>
+  </Step>
+
+  <Step title="Monitor Sales and Transactions">
+    Track your event performance:
+
+    - **Transactions**: View at `/transacciones` for all payment records
+    - **Orders**: Check `/ordenes` for customer purchase history
+    - **Tickets**: Monitor sold/available tickets at `/tickets`
+    - **Event Details**: Access comprehensive event analytics at `/evento-detalles`
+
+    ```javascript
+    // Fetch event transactions
+    const querySnapshot = await Firestore
+      .collection('transactions')
+      .where('event_id', '==', eventId)
+      .get();
+    ```
+  </Step>
+</Steps>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Architecture Overview" icon="diagram-project" href="/architecture">
+    Learn about the technical architecture and how components interact
+  </Card>
+  <Card title="User Management" icon="users">
+    Set up staff, clients, collaborators, and manage permissions
+  </Card>
+  <Card title="Contract Management" icon="file-contract">
+    Create and manage contracts with clients
+  </Card>
+  <Card title="Financial Reports" icon="chart-line">
+    Generate payout reports and reconcile transactions
+  </Card>
+</CardGroup>
+
+## Common Issues
+
+<AccordionGroup>
+  <Accordion title="I can't see the Create Event option">
+    Ensure your account has the `ViewEventsCreate` permission. Contact your administrator to verify your role has the necessary permissions defined in `src/guards/contexts/DefineAbilities.js`.
+  </Accordion>
+
+  <Accordion title="Event creation fails validation">
+    Check that:
+    - You have selected a valid client with an active contract
+    - The event venue exists in the system
+    - Start date is before end date
+    - All required fields are filled
+  </Accordion>
+
+  <Accordion title="Tickets not appearing for sale">
+    Verify that:
+    - Tickets have been generated for the event
+    - Event status is set to "Activo"
+    - The sales channel (portal or box office) has the event assigned
+    - Ticket inventory hasn't been exhausted
+  </Accordion>
+
+  <Accordion title="Authentication errors on login">
+    Common authentication errors:
+    - `auth/invalid-email`: Email format is incorrect
+    - `auth/invalid-credential`: Wrong email or password
+    - `auth/too-many-requests`: Too many failed attempts, wait before retrying
+    - User not authorized: Account not active or not in `u_clients` platform
+  </Accordion>
+</AccordionGroup>
+
+## Support
+
+If you need assistance:
+
+- Check the authentication status in your Firestore `u_clients` collection
+- Verify Firebase configuration in `src/guards/firebase/Firebase.js`
+- Review permission definitions for your account type
+- Contact your system administrator for access issues

@@ -1,0 +1,307 @@
+---
+title: 'Redux Store Configuration'
+description: 'Learn about the Redux store setup with Redux Toolkit and Redux Persist in TMT'
+icon: 'database'
+---
+
+## Overview
+
+TMT uses Redux Toolkit for state management with Redux Persist for automatic state persistence to local storage. The store is configured with custom middleware to handle serialization and persistence actions.
+
+## Store Configuration
+
+The Redux store is configured using `configureStore` from Redux Toolkit with persistence support.
+
+### Basic Setup
+
+```javascript Store.js:84-92
+export const store = configureStore({
+  reducer: persistedReducer,
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: {
+        ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+      },
+    }),
+});
+export const persistor = persistStore(store);
+```
+
+## Redux Persist Configuration
+
+Redux Persist automatically saves and rehydrates the Redux state to/from local storage.
+
+### Persist Configuration
+
+```javascript Store.js:45-49
+const persistConfig = {
+  key: 'root',
+  storage,
+  whitelist: ['auth', 'customizer', 'setup']
+};
+```
+
+<ParamField path="key" type="string" required>
+  The key used to store the persisted state in storage
+</ParamField>
+
+<ParamField path="storage" type="Storage" required>
+  The storage engine to use (defaults to localStorage)
+</ParamField>
+
+<ParamField path="whitelist" type="string[]">
+  Array of reducer keys to persist. Only `auth`, `customizer`, and `setup` states are persisted across sessions
+</ParamField>
+
+### Persisted Reducer
+
+```javascript Store.js:82
+const persistedReducer = persistReducer(persistConfig, rootReducer);
+```
+
+The root reducer is wrapped with `persistReducer` to enable automatic persistence.
+
+## Middleware Configuration
+
+The store uses custom middleware configuration to handle non-serializable values in Redux Persist actions.
+
+### Serialization Check
+
+The middleware ignores Redux Persist action types to prevent serialization warnings:
+
+- `FLUSH` - Flush pending state to storage
+- `REHYDRATE` - Rehydrate persisted state
+- `PAUSE` - Pause persistence
+- `PERSIST` - Trigger persistence
+- `PURGE` - Clear persisted state
+- `REGISTER` - Register reducers
+
+```javascript Store.js:86-91
+middleware: (getDefaultMiddleware) =>
+  getDefaultMiddleware({
+    serializableCheck: {
+      ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+    },
+  }),
+```
+
+## Root Reducer
+
+The root reducer combines all slice reducers into a single reducer tree.
+
+```javascript Store.js:51-80
+const rootReducer = combineReducers({
+  customizer: CustomizerReducer,
+  setup: SetupReducer,
+  staff: StaffReducer,
+  collaborators: CollaboratorsReducer,
+  clients: ClientsReducer,
+  customers: CustomerReducer,
+  contracts: ContractReducer,
+  addendums: AddendumReducer,
+  tickets: TicketReducer,
+  queryTickets: QueryTicketReducer,
+  auth: authReducer,
+  eventVenues: EventsVenuesReduces,
+  events: EventsReduces,
+  credentials: CredentialsReduces,
+  Transactions: TransactionsReducer,
+  offices: OfficesReducer,
+  officeEvents: OfficeEventReducer,
+  officeTransactions: OfficeTransactionReducer,
+  paymentsMethod: PaymentsMethodsReducer,
+  payouts: PayoutsReducer,
+  custodyAccounts: CustodyAccountsReducer,
+  orders: OrdersReducer,
+  officeCollaborators: ActiveOfficeCollaboratorsReducer,
+  contractsLegal: ContractsLegalReducer,
+  ordersPayout: OrdersPayoutReducer,
+  portals: PortalsReducer,
+  documents: DocumentsReducer,
+  marketing: MarketingReducer,
+});
+```
+
+### State Tree Structure
+
+<ResponseField name="customizer" type="object">
+  UI customization settings (persisted)
+</ResponseField>
+
+<ResponseField name="setup" type="object">
+  Application setup configuration (persisted)
+</ResponseField>
+
+<ResponseField name="auth" type="object">
+  Authentication state and user information (persisted)
+</ResponseField>
+
+<ResponseField name="staff" type="object">
+  Staff users management state
+</ResponseField>
+
+<ResponseField name="collaborators" type="object">
+  Collaborators management state
+</ResponseField>
+
+<ResponseField name="clients" type="object">
+  Client users management state
+</ResponseField>
+
+<ResponseField name="customers" type="object">
+  Customer users management state
+</ResponseField>
+
+<ResponseField name="contracts" type="object">
+  Contracts management state
+</ResponseField>
+
+<ResponseField name="addendums" type="object">
+  Contract addendums management state
+</ResponseField>
+
+<ResponseField name="tickets" type="object">
+  Event tickets management state
+</ResponseField>
+
+<ResponseField name="queryTickets" type="object">
+  Ticket query and search state
+</ResponseField>
+
+<ResponseField name="eventVenues" type="object">
+  Event venues management state
+</ResponseField>
+
+<ResponseField name="events" type="object">
+  Events management state
+</ResponseField>
+
+<ResponseField name="credentials" type="object">
+  User credentials management state
+</ResponseField>
+
+<ResponseField name="Transactions" type="object">
+  Transactions management state
+</ResponseField>
+
+<ResponseField name="offices" type="object">
+  Box offices management state
+</ResponseField>
+
+<ResponseField name="officeEvents" type="object">
+  Active office events state
+</ResponseField>
+
+<ResponseField name="officeTransactions" type="object">
+  Office-specific transactions state
+</ResponseField>
+
+<ResponseField name="paymentsMethod" type="object">
+  Payment methods configuration state
+</ResponseField>
+
+<ResponseField name="payouts" type="object">
+  Payout methods management state
+</ResponseField>
+
+<ResponseField name="custodyAccounts" type="object">
+  Custody accounts management state
+</ResponseField>
+
+<ResponseField name="orders" type="object">
+  Orders management state
+</ResponseField>
+
+<ResponseField name="officeCollaborators" type="object">
+  Office collaborators management state
+</ResponseField>
+
+<ResponseField name="contractsLegal" type="object">
+  Legal contracts management state
+</ResponseField>
+
+<ResponseField name="ordersPayout" type="object">
+  Order payouts management state
+</ResponseField>
+
+<ResponseField name="portals" type="object">
+  Customer portals management state
+</ResponseField>
+
+<ResponseField name="documents" type="object">
+  Documents management state
+</ResponseField>
+
+<ResponseField name="marketing" type="object">
+  Marketing campaigns management state
+</ResponseField>
+
+## Usage
+
+### Importing the Store
+
+```javascript
+import store from './store/Store';
+import { Provider } from 'react-redux';
+
+function App() {
+  return (
+    <Provider store={store}>
+      {/* Your app components */}
+    </Provider>
+  );
+}
+```
+
+### Accessing State
+
+```javascript
+import { useSelector } from 'react-redux';
+
+function MyComponent() {
+  const user = useSelector((state) => state.auth.user);
+  const events = useSelector((state) => state.events.Events);
+  
+  return (
+    <div>
+      <p>Welcome, {user?.name}</p>
+      <p>Total Events: {events.length}</p>
+    </div>
+  );
+}
+```
+
+### Dispatching Actions
+
+```javascript
+import { useDispatch } from 'react-redux';
+import { fetchStaffUsers } from './store/apps/Users/StaffSlice';
+
+function StaffList() {
+  const dispatch = useDispatch();
+  
+  useEffect(() => {
+    dispatch(fetchStaffUsers());
+  }, [dispatch]);
+  
+  // Component implementation
+}
+```
+
+## Best Practices
+
+<Card title="Keep Actions Serializable" icon="check">
+  Avoid storing non-serializable values (functions, promises, etc.) in Redux state. Use middleware or side effects for async operations.
+</Card>
+
+<Card title="Use Selectors" icon="check">
+  Create reusable selectors to access state values and avoid duplicating logic across components.
+</Card>
+
+<Card title="Minimal Persistence" icon="check">
+  Only persist essential state (auth, settings) to avoid storage bloat. Most data should be fetched on demand.
+</Card>
+
+<Card title="Type Safety" icon="check">
+  Consider using TypeScript with Redux Toolkit for better type safety and autocomplete support.
+</Card>

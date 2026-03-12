@@ -1,0 +1,483 @@
+---
+title: Ticket Sales
+description: Manage ticket inventory, configure pricing, and process sales
+icon: ticket
+---
+
+## Overview
+
+The Ticket Sales feature allows you to create, manage, and sell tickets for your events. TradeMaster provides comprehensive tools for configuring ticket types, managing inventory, tracking sales, and validating tickets at event entry points.
+
+<Note>
+  Tickets in TMT are organized by zones and seat assignments, with real-time status tracking from creation through validation.
+</Note>
+
+## Ticket Lifecycle
+
+Tickets move through several states during their lifetime:
+
+<Steps>
+  <Step title="Created">
+    Ticket is generated and added to inventory but not yet available for sale
+  </Step>
+  <Step title="Available">
+    Ticket is active and available for purchase
+  </Step>
+  <Step title="Reserved">
+    Ticket is temporarily held during checkout process
+  </Step>
+  <Step title="Sold">
+    Ticket has been purchased and is associated with a customer
+  </Step>
+  <Step title="Validated">
+    Ticket has been scanned and validated at event entry
+  </Step>
+  <Step title="Cancelled/Refunded">
+    Ticket sale has been cancelled and ticket returned to inventory
+  </Step>
+</Steps>
+
+## Accessing Ticket Management
+
+<Steps>
+  <Step title="Navigate to Event Details">
+    From the Events list, click on the event you want to manage
+  </Step>
+  <Step title="Open Tickets Tab">
+    In the event detail view, click on the **Tickets** or **Entradas** tab
+  </Step>
+  <Step title="View Ticket Inventory">
+    The ticket table displays all tickets created for this event
+  </Step>
+</Steps>
+
+## Ticket Configuration
+
+### Setting Up Zones
+
+Zones represent different sections or areas within your venue:
+
+<CardGroup cols={2}>
+  <Card title="VIP Zone" icon="star">
+    Premium seating with higher pricing and special amenities
+  </Card>
+  <Card title="General Admission" icon="users">
+    Standard seating or standing areas
+  </Card>
+  <Card title="Balcony" icon="building">
+    Upper-level seating sections
+  </Card>
+  <Card title="Floor" icon="layer-group">
+    Ground-level or floor seating areas
+  </Card>
+</CardGroup>
+
+#### Zone Properties
+
+```javascript
+// Zone configuration structure
+{
+  zone: "VIP",
+  color: "#FFD700", // Gold color for visual identification
+  capacity: 100,
+  price: 150.00,
+  currency: "USD"
+}
+```
+
+<Tip>
+  Assign distinct colors to each zone for easy visual identification in the ticket table and seating charts.
+</Tip>
+
+### Creating Ticket Inventory
+
+After defining zones, generate the actual ticket inventory:
+
+<Steps>
+  <Step title="Define Ticket Quantity">
+    Specify how many tickets to create for each zone, respecting venue capacity limits
+  </Step>
+  <Step title="Set Seat Assignments">
+    Choose between:
+    - **Numbered seating**: Specific seat assignments (e.g., Row A, Seat 12)
+    - **General admission**: No specific seat assignment
+  </Step>
+  <Step title="Configure Pricing">
+    Set the base price for each ticket in the zone
+  </Step>
+  <Step title="Generate Tickets">
+    Click generate to create the ticket inventory
+  </Step>
+</Steps>
+
+<Warning>
+  Once tickets are generated and sales have begun, you cannot reduce the total ticket count. Only add tickets if you need to increase capacity.
+</Warning>
+
+## Ticket Table Interface
+
+The ticket table provides a comprehensive view of all tickets for an event:
+
+### Table Columns
+
+| Column | Description |
+|--------|-------------|
+| **Ticket ID** | Unique identifier with seat assignment (e.g., "A-12") |
+| **Zone** | Zone name (VIP, General, etc.) |
+| **Color** | Visual color indicator for the zone |
+| **Date Created** | When the ticket was generated |
+| **Last Action** | Most recent activity from the ledger |
+| **Status** | Current ticket status (Active/Inactive) |
+| **Actions** | View details or manage the ticket |
+
+### Ticket Status Indicators
+
+<CardGroup cols={2}>
+  <Card title="Active" icon="circle-check" color="#2ecc71">
+    Ticket is available for sale or has been sold and is valid
+  </Card>
+  <Card title="Inactive" icon="circle-xmark" color="#e74c3c">
+    Ticket has been deactivated, cancelled, or is not available for sale
+  </Card>
+</CardGroup>
+
+### Searching and Filtering Tickets
+
+```javascript
+// Global search fields
+globalFilterFields: [
+  'ticket_id',     // Search by ticket ID
+  'zone',          // Filter by zone name
+  'status',        // Filter by status
+  'dateCreated'    // Search by creation date
+]
+```
+
+Use the search bar to quickly find specific tickets:
+- Search by seat ID: "A-12"
+- Filter by zone: "VIP"
+- Filter by status: "Activo" or "Inactivo"
+
+## Ticket Details and Actions
+
+Click on any ticket to view detailed information:
+
+### Ticket Information
+
+```javascript
+{
+  id: "event_id-ticket_id",
+  seat_id: "A-12",
+  zone: "VIP",
+  color: "#FFD700",
+  price: 150.00,
+  status: true,
+  date_created: "2024-03-01T10:00:00",
+  ledger: [
+    { action: "created", date: "2024-03-01T10:00:00" },
+    { action: "sold", date: "2024-03-10T15:30:00" },
+    { action: "validated", date: "2024-03-15T19:00:00" }
+  ]
+}
+```
+
+### Ticket Ledger
+
+The ledger tracks all actions performed on a ticket:
+
+<Accordion title="Available Ledger Actions">
+  - **created**: Ticket generated and added to inventory
+  - **sold**: Ticket purchased by a customer
+  - **reserved**: Temporarily held during checkout
+  - **validated**: Scanned and validated at entry
+  - **cancelled**: Sale cancelled, ticket returned to inventory
+  - **refunded**: Payment refunded to customer
+  - **transferred**: Ownership transferred to another customer
+</Accordion>
+
+## Processing Ticket Sales
+
+### Point of Sale Workflow
+
+<Steps>
+  <Step title="Search for Tickets">
+    From a box office, search for available tickets by event, zone, or seat number
+  </Step>
+  <Step title="Select Tickets">
+    Choose one or more tickets to add to the order
+  </Step>
+  <Step title="Review Order">
+    Verify ticket details, quantities, and total price
+  </Step>
+  <Step title="Select Payment Method">
+    Choose from available payment methods configured for the office
+  </Step>
+  <Step title="Process Payment">
+    Complete the payment transaction
+  </Step>
+  <Step title="Generate Receipt">
+    System generates order confirmation and tickets with QR codes
+  </Step>
+</Steps>
+
+### Order Structure
+
+```javascript
+// Order data structure
+{
+  id: "order_id",
+  event_name: "Rock Concert 2024",
+  event_id: "event_123",
+  office_name: "Main Box Office",
+  office_id: "office_456",
+  tickets: [
+    { ticket_id: "A-12", zone: "VIP", price: 150.00 },
+    { ticket_id: "A-13", zone: "VIP", price: 150.00 }
+  ],
+  amount: 300.00,
+  currency: "USD",
+  payment_method: "Credit Card",
+  status: true,
+  date: {
+    created: "2024-03-10T15:30:00"
+  }
+}
+```
+
+## Ticket Validation
+
+### QR Code Generation
+
+Each sold ticket receives a unique QR code for validation:
+
+```javascript
+// QR code includes encrypted data
+{
+  event_id: "event_123",
+  ticket_id: "A-12",
+  order_id: "order_789",
+  validation_key: "encrypted_key",
+  customer_info: "masked_for_privacy"
+}
+```
+
+<Tip>
+  QR codes are validated against the event's security key to prevent fraud and duplicate entry.
+</Tip>
+
+### Validation Process
+
+<Steps>
+  <Step title="Scan QR Code">
+    Use the mobile app or scanner device to scan the ticket QR code
+  </Step>
+  <Step title="Verify Ticket">
+    System checks:
+    - Ticket belongs to this event
+    - Ticket has not been previously validated
+    - QR code signature is valid
+    - Event is active and date matches
+  </Step>
+  <Step title="Grant or Deny Entry">
+    - ✅ Valid ticket: Grant entry and mark as validated
+    - ❌ Invalid ticket: Deny entry and show error reason
+  </Step>
+  <Step title="Update Ledger">
+    Add validation action to ticket ledger with timestamp
+  </Step>
+</Steps>
+
+### Validation Responses
+
+<CardGroup cols={2}>
+  <Card title="Valid Ticket" icon="check" color="#2ecc71">
+    "Ticket validated successfully. Entry granted."
+  </Card>
+  <Card title="Already Used" icon="ban" color="#e74c3c">
+    "This ticket has already been validated."
+  </Card>
+  <Card title="Invalid Event" icon="calendar-xmark" color="#e74c3c">
+    "This ticket is not valid for this event."
+  </Card>
+  <Card title="Expired" icon="clock" color="#f39c12">
+    "This ticket has expired."
+  </Card>
+</CardGroup>
+
+## Searching and Querying Tickets
+
+### Query by Customer Information
+
+Look up tickets purchased by a specific customer:
+
+<Steps>
+  <Step title="Access Ticket Search">
+    Navigate to **Tickets** > **Search** or **Buscar Boletos**
+  </Step>
+  <Step title="Enter Customer Details">
+    Search by:
+    - Email address
+    - Phone number
+    - Order ID
+    - Customer name
+  </Step>
+  <Step title="View Customer Tickets">
+    System displays all tickets purchased by this customer across all events
+  </Step>
+</Steps>
+
+### Display Ticket Information
+
+The search results show:
+
+```javascript
+// Customer ticket information
+{
+  customer: {
+    name: "John Doe",
+    email: "john@example.com",
+    phone: "+1 555-0123"
+  },
+  tickets: [
+    {
+      event_name: "Rock Concert 2024",
+      ticket_id: "A-12",
+      zone: "VIP",
+      status: "valid",
+      qr_code: "base64_encoded_image"
+    }
+  ],
+  order_total: 150.00
+}
+```
+
+<Note>
+  Customers can receive their tickets via email or SMS with QR codes for easy access.
+</Note>
+
+## Ticket Reports and Analytics
+
+### Sales Summary
+
+View comprehensive sales data for an event:
+
+<CardGroup cols={2}>
+  <Card title="Total Capacity" icon="users">
+    Maximum number of tickets available
+  </Card>
+  <Card title="Tickets Sold" icon="check-double">
+    Number of tickets purchased
+  </Card>
+  <Card title="Available Tickets" icon="ticket-simple">
+    Remaining inventory
+  </Card>
+  <Card title="Sales Percentage" icon="percent">
+    Percentage of capacity sold
+  </Card>
+  <Card title="Total Revenue" icon="dollar-sign">
+    Sum of all ticket sales
+  </Card>
+  <Card title="Average Price" icon="chart-line">
+    Mean ticket price across all zones
+  </Card>
+</CardGroup>
+
+### Sales by Zone
+
+```javascript
+// Zone performance breakdown
+[
+  { zone: "VIP", capacity: 100, sold: 87, revenue: 13050.00 },
+  { zone: "General", capacity: 500, sold: 432, revenue: 21600.00 },
+  { zone: "Balcony", capacity: 200, sold: 156, revenue: 4680.00 }
+]
+```
+
+### Export Options
+
+<Steps>
+  <Step title="Click Export">
+    Click the download icon in the ticket table header
+  </Step>
+  <Step title="Select Format">
+    Choose CSV format for the export
+  </Step>
+  <Step title="Download File">
+    The system generates and downloads a CSV file with all ticket data
+  </Step>
+</Steps>
+
+```csv
+Ticket ID,Zone,Color,Status,Created Date,Last Action,Price
+A-12,VIP,#FFD700,Active,2024-03-01,Sold,150.00
+A-13,VIP,#FFD700,Active,2024-03-01,Sold,150.00
+B-01,General,#3498db,Active,2024-03-01,Available,50.00
+```
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Capacity Management" icon="gauge-high">
+    Never exceed venue maximum capacity when creating tickets
+  </Card>
+  <Card title="Zone Pricing" icon="tags">
+    Use clear pricing differences between zones to guide customer choices
+  </Card>
+  <Card title="Color Coding" icon="palette">
+    Choose distinct, accessible colors for each zone
+  </Card>
+  <Card title="Inventory Monitoring" icon="chart-line">
+    Regularly check ticket availability and adjust marketing accordingly
+  </Card>
+  <Card title="Validation Testing" icon="qrcode">
+    Test QR code scanning before event day
+  </Card>
+  <Card title="Backup Systems" icon="floppy-disk">
+    Have offline validation procedures ready in case of technical issues
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+<Accordion title="Cannot create tickets">
+  1. Verify the event is in "Instanciado" or "Activo" status
+  2. Check that zones are properly configured
+  3. Ensure total tickets don't exceed venue capacity
+  4. Confirm you have permission to manage tickets
+</Accordion>
+
+<Accordion title="Ticket not appearing after purchase">
+  1. Check the order status is "Active"
+  2. Verify payment was successfully processed
+  3. Look in the event's ticket list for the ticket ID
+  4. Check if the ticket was assigned to a different event
+</Accordion>
+
+<Accordion title="QR code won't scan">
+  1. Ensure good lighting conditions
+  2. Check that the QR code image is clear and not damaged
+  3. Verify the scanner device is working properly
+  4. Try manual ticket ID entry as backup
+  5. Check that the event security key is configured
+</Accordion>
+
+<Accordion title="Duplicate validation error">
+  1. Check the ticket ledger for previous validation
+  2. Verify this is not a duplicate or counterfeit ticket
+  3. Contact customer to confirm they haven't already entered
+  4. Check system time synchronization
+</Accordion>
+
+## Related Features
+
+<CardGroup cols={2}>
+  <Card title="Event Management" icon="calendar" href="/features/event-management">
+    Configure events before creating ticket inventory
+  </Card>
+  <Card title="Office Operations" icon="building" href="/features/office-operations">
+    Set up box offices to process ticket sales
+  </Card>
+  <Card title="Payment Processing" icon="credit-card" href="/features/payment-processing">
+    Configure payment methods for ticket purchases
+  </Card>
+</CardGroup>

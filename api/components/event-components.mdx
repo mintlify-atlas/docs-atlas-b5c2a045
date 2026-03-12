@@ -1,0 +1,466 @@
+---
+title: 'Event Components'
+description: 'React components for managing events, venues, tickets, and credentials in TradeMaster Transactions'
+---
+
+## Overview
+
+The Event Components library provides comprehensive React components for managing events, event venues, tickets, and credentials in the TradeMaster Transactions platform.
+
+## EventsTable
+
+A comprehensive data table component for displaying and managing events with advanced filtering and search capabilities.
+
+### Props
+
+<ParamField path="eventID" type="string">
+  Optional event ID for filtering specific events
+</ParamField>
+
+### Features
+
+- **Client Filtering**: Automatically filters events by authenticated user
+- **Status Management**: Visual status chips (Instanciado, Activo, Finalizado, En Progreso)
+- **Event Images**: Avatar display with event media or fallback icon
+- **Ledger Tracking**: Shows last action from event ledger
+- **Venue Information**: Displays venue name for each event
+- **CSV Export**: Export event data to CSV
+- **Permission Controls**: Create button with CASL permission checks
+
+### Usage Example
+
+```jsx
+import EventsTable from 'src/components/apps/events/EventsTable';
+import { Provider } from 'react-redux';
+import store from 'src/store/Store';
+
+function EventsPage() {
+  return (
+    <Provider store={store}>
+      <EventsTable eventID="optional-event-id" />
+    </Provider>
+  );
+}
+```
+
+### Data Structure
+
+```typescript
+interface Event {
+  id: string;
+  client_id: string;
+  type: string;
+  status: 'Instanciado' | 'Activo' | 'Finalizado' | 'En Progreso';
+  date_start: string;
+  venue_name: string;
+  event: {
+    name: string;
+    media: string[];
+  };
+  ledger: Array<{
+    action: string;
+    date: Timestamp;
+  }>;
+}
+```
+
+### Status Values
+
+| Status | Color | Description |
+|--------|-------|-------------|
+| Instanciado | Warning (Yellow) | Event created but not yet active |
+| Activo | Success (Green) | Event is currently active |
+| Finalizado | Gray | Event has ended |
+| En Progreso | Blue | Event is in progress |
+
+### Columns
+
+| Column | Field | Sortable | Description |
+|--------|-------|----------|-------------|
+| Nombre | `event.name` | ✓ | Event name with image/icon |
+| Fecha de Inicio | `date_start` | ✓ | Event start date |
+| Estatus | `status` | ✓ | Visual status chip |
+| Última Acción | `ledger.action` | ✓ | Last ledger action with timestamp |
+| Lugar del Evento | `venue_name` | ✓ | Event venue name |
+| Acciones | - | - | View details button |
+
+---
+
+## EventVenuesTable
+
+Data table component for managing event venues (concert halls, stadiums, etc.).
+
+### Props
+
+This component doesn't accept props as it connects directly to Redux state.
+
+### Features
+
+- **Venue Images**: Avatar display with venue photos
+- **Status Indicators**: Active/Inactive status badges
+- **Search & Filter**: Global search across venue properties
+- **Capacity Display**: Shows maximum venue capacity
+- **Location Information**: City/location data
+- **Create Permission**: Permission-based venue creation
+
+### Usage Example
+
+```jsx
+import EventVenuesTable from 'src/components/apps/event-venues/EventVenuesTable';
+
+function VenuesPage() {
+  return <EventVenuesTable />;
+}
+```
+
+### Data Structure
+
+```typescript
+interface EventVenue {
+  id: string;
+  name: string;
+  type: string;
+  status: boolean;
+  max_capacity: number;
+  city: string;
+  media: string[];
+}
+```
+
+### Columns
+
+| Column | Field | Sortable |
+|--------|-------|----------|
+| Nombre | `name` | ✓ |
+| Capacidad Máxima | `max_capacity` | ✓ |
+| Ciudad | `city` | ✓ |
+| Estatus | `status` | ✓ |
+| Acciones | - | - |
+
+---
+
+## NewEventForm
+
+Comprehensive form component for creating new events with validation and file uploads.
+
+### Features
+
+- **Client Selection**: Autocomplete for selecting event clients
+- **Contract Management**: Select multiple contracts for an event
+- **Legal Contracts**: Associate legal contracts with events
+- **Venue Selection**: Choose from available event venues
+- **Event Types**: Configurable event type selection
+- **Image Upload**: Event banner with 2MB size limit
+- **Terms & Conditions**: Upload event-specific T&C documents
+- **Date/Time Pickers**: Start and end date selection
+- **Form Validation**: Comprehensive Yup schema validation
+- **Secret Key Generation**: Automatic security key generation
+
+### Usage Example
+
+```jsx
+import NewEventForm from 'src/components/apps/events/NewEventForm';
+
+function CreateEventPage() {
+  return <NewEventForm />;
+}
+```
+
+### Form Fields
+
+<ParamField path="name" type="string" required>
+  Event name
+</ParamField>
+
+<ParamField path="description" type="string" required>
+  Event description
+</ParamField>
+
+<ParamField path="main_activity" type="string" required>
+  Primary event activity/genre
+</ParamField>
+
+<ParamField path="secondary_activity" type="string" required>
+  Secondary event activity
+</ParamField>
+
+<ParamField path="terms_and_conditions" type="string" required>
+  Event terms and conditions text
+</ParamField>
+
+<ParamField path="type_metadata_description" type="string" required>
+  Artist or performer description
+</ParamField>
+
+<ParamField path="type" type="string" required>
+  Event type from setup configuration
+</ParamField>
+
+<ParamField path="client" type="object" required>
+  Selected client object
+</ParamField>
+
+<ParamField path="contract_legal" type="object" required>
+  Selected legal contract
+</ParamField>
+
+<ParamField path="event_venue" type="object" required>
+  Selected event venue
+</ParamField>
+
+<ParamField path="contracts" type="array" required>
+  Array of selected contract IDs (minimum 1)
+</ParamField>
+
+### Validation Schema
+
+```javascript
+const newEventVenueSchema = Yup.object().shape({
+  name: Yup.string().required('Nombre es requerido'),
+  description: Yup.string().required('Descripción es requerido'),
+  main_activity: Yup.string().required('Actividad Principal es requerido'),
+  secondary_activity: Yup.string().required('Actividad Secundaria es requerido'),
+  terms_and_conditions: Yup.string().required('Términos y Condiciones del concierto es requerido'),
+  type_metadata_description: Yup.string().required('Descripción del artista requerido'),
+  type: Yup.string().required('Tipo de Evento es requerido'),
+  client: Yup.object().required('Cliente es requerido'),
+  contract_legal: Yup.object().required('Contrato Legal es requerido'),
+  event_venue: Yup.object().required('Sala de Evento requerido'),
+  contracts: Yup.array().min(1, 'Debe seleccionar al menos un contrato').required('Contratos son requerido'),
+});
+```
+
+---
+
+## DisplayTicket
+
+Comprehensive ticket detail display component with QR code generation.
+
+### Features
+
+- **QR Code Display**: Encrypted QR code for ticket validation
+- **Customer Information**: Displays customer name, ID, email, phone
+- **Event Details**: Event name, description, date, time
+- **Zone Information**: Seating zone and section details
+- **Ticket Status**: Real-time status management
+- **Price Display**: Ticket price with currency
+- **Ledger History**: Complete ticket action history
+- **Permission-based Updates**: Status changes with CASL permissions
+- **Time Parsing**: Handles both timestamp and string date formats
+
+### Usage Example
+
+```jsx
+import DisplayTicket from 'src/components/apps/events/Tickets/DisplayTicket/DisplayTicket';
+import { useSearchParams } from 'react-router-dom';
+
+function TicketDetailPage() {
+  const [searchParams] = useSearchParams();
+  const eventId = searchParams.get('event_id');
+  const ticketId = searchParams.get('id');
+  
+  return <DisplayTicket />;
+}
+```
+
+### Data Structure
+
+```typescript
+interface Ticket {
+  id: string;
+  event_name: string;
+  event_description: string;
+  date_start: Timestamp | string;
+  time_start?: string;
+  customer_name?: string;
+  customer_id?: string;
+  customer_email?: string;
+  customer_phone?: string;
+  zone_name: string;
+  section_name: string;
+  seat_name: string;
+  price: number;
+  currency: string;
+  status: string;
+  ledger: Array<{
+    action: string;
+    date: Timestamp;
+    user: string;
+  }>;
+}
+```
+
+### QR Code Encryption
+
+The component generates an encrypted QR code using:
+
+```javascript
+import { encrypt } from 'src/utils/encryption';
+
+const dataString = `${eventID}-${ticketID}`;
+const encrypted = encrypt(dataString, secPin.data?.qr_pin);
+```
+
+---
+
+## CredentialsTableList
+
+Manages event credentials for staff and personnel access.
+
+### Props
+
+This component doesn't accept props but uses query parameters for event filtering.
+
+### Features
+
+- **Event-specific Credentials**: Filters credentials by event
+- **Status Management**: Active/inactive credential tracking
+- **Search & Filter**: Global search functionality
+- **Create Permissions**: Permission-based credential creation
+- **Detail View**: Navigate to credential details
+
+### Usage Example
+
+```jsx
+import CredentialsTableList from 'src/components/apps/events/credentials-events/CredentialsTableList';
+
+function EventCredentialsPage() {
+  return <CredentialsTableList />;
+}
+```
+
+---
+
+## Common Event Patterns
+
+### Event Status Management
+
+Consistent status chip rendering across event components:
+
+```jsx
+const StatusChip = ({ status }) => {
+  let statusColor, statusBgColor;
+  
+  switch(status) {
+    case "Instanciado":
+      statusColor = theme.palette.warning.main;
+      statusBgColor = 'rgba(255, 193, 7, 0.1)';
+      break;
+    case "Activo":
+      statusColor = theme.palette.success.main;
+      statusBgColor = 'rgba(46, 204, 113, 0.1)';
+      break;
+    case "Finalizado":
+      statusColor = "gray";
+      statusBgColor = 'rgba(158, 158, 158, 0.1)';
+      break;
+    case "En Progreso":
+      statusColor = "blue";
+      statusBgColor = 'rgba(33, 150, 243, 0.1)';
+      break;
+    default:
+      statusColor = theme.palette.error.main;
+      statusBgColor = 'rgba(231, 76, 60, 0.1)';
+  }
+  
+  return (
+    <Chip
+      label={status}
+      sx={{
+        backgroundColor: statusBgColor,
+        color: statusColor,
+      }}
+    />
+  );
+};
+```
+
+### Timestamp Conversion
+
+Utility for converting Firestore timestamps:
+
+```jsx
+import { convertTimestamp } from 'src/utils/convertTimestamp';
+
+const displayDate = convertTimestamp(ticket.date_start);
+```
+
+### Event Image Display
+
+Pattern for displaying event images with fallback:
+
+```jsx
+import { IconTicket } from '@tabler/icons';
+
+<Avatar
+  src={row.event?.media && (row.event?.media[0] ?? "")}
+  alt={row.event?.name}
+  variant="rounded"
+  sx={{ width: 48, height: 48 }}
+>
+  {(!row.event?.media || !row.event?.media[0]) && <IconTicket size="24" />}
+</Avatar>
+```
+
+### Ledger Display
+
+Showing last action from event ledger:
+
+```jsx
+const last = row.ledger[row.ledger.length - 1];
+
+<Stack>
+  <Typography fontWeight="500">
+    {last.action}
+  </Typography>
+  <Typography color="textSecondary" variant="subtitle2">
+    {convertTimestamp(last.date)}
+  </Typography>
+</Stack>
+```
+
+---
+
+## Integration with Firebase
+
+Event components integrate with Firebase for data persistence:
+
+```javascript
+import { Firestore, helpers_event_pin } from 'src/guards/firebase/Firebase';
+
+// Fetch ticket data
+const ticketQuery = await Firestore
+  .collection('events')
+  .doc(eventID)
+  .collection('tickets')
+  .doc(ticketID)
+  .get();
+
+// Get event security pin
+const secPin = await helpers_event_pin({ event_id: eventID });
+```
+
+---
+
+## Responsive Design
+
+All event components are fully responsive:
+
+```jsx
+<Grid container spacing={3}>
+  <Grid item xs={12} sm={6} lg={3}>
+    {/* Content adapts to screen size */}
+  </Grid>
+</Grid>
+```
+
+---
+
+## Performance Optimization
+
+Components use React best practices for performance:
+
+- **Memoization**: `React.useRef` for table references
+- **Controlled Loading**: Loading states prevent premature rendering
+- **Efficient Updates**: Redux selectors for optimal re-renders
+- **Lazy Loading**: Images loaded on-demand

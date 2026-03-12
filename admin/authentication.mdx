@@ -1,0 +1,238 @@
+---
+title: 'Authentication Setup'
+description: 'Configure Firebase and Auth0 authentication for TradeMaster Transactions'
+icon: 'shield-check'
+---
+
+## Overview
+
+TradeMaster Transactions supports multiple authentication providers to secure your platform. The system is built with flexibility in mind, allowing you to choose between Firebase Authentication and Auth0 based on your organizational needs.
+
+## Authentication Providers
+
+### Firebase Authentication
+
+Firebase is the primary authentication provider for TMT, offering comprehensive user management and session handling.
+
+#### Configuration
+
+Configure Firebase in your application by setting up the Firebase config object:
+
+```javascript guards/firebase/Firebase.js
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+```
+
+<Warning>
+  Never commit your actual Firebase credentials to version control. Use environment variables instead.
+</Warning>
+
+#### Supported Authentication Methods
+
+Firebase authentication in TMT supports multiple sign-in methods:
+
+<CardGroup cols={2}>
+  <Card title="Email/Password" icon="envelope">
+    Traditional email and password authentication with secure password reset functionality.
+  </Card>
+  <Card title="Google OAuth" icon="google">
+    One-click sign-in with Google accounts using OAuth 2.0.
+  </Card>
+  <Card title="Facebook OAuth" icon="facebook">
+    Social authentication through Facebook Login.
+  </Card>
+  <Card title="Twitter OAuth" icon="twitter">
+    Sign in with Twitter credentials.
+  </Card>
+</CardGroup>
+
+#### Implementation Details
+
+The Firebase authentication context (`FirebaseContext.js`) handles:
+
+- **User Session Management**: Automatic session tracking with `onAuthStateChanged`
+- **User Status Validation**: Checks user status in Firestore (`u_clients` collection)
+- **IP Tracking**: Records last access IP and timestamp for security auditing
+- **Profile Data**: Syncs user profile data from Firestore to the application state
+
+```javascript
+// Authentication state listener
+firebase.auth().onAuthStateChanged(async (user) => {
+  if (user) {
+    const querySnapshot = await Firestore.collection('u_clients')
+      .doc(user.uid)
+      .get();
+    
+    if (querySnapshot.data()?.status !== true) {
+      logout(); // Inactive users are logged out
+    }
+  }
+});
+```
+
+### Auth0 Integration
+
+Auth0 provides enterprise-grade authentication with advanced security features.
+
+#### Configuration
+
+Set up Auth0 in `guards/auth0/Auth0Context.js`:
+
+```javascript
+const auth0Config = {
+  client_id: 'YOUR_CLIENT_ID',
+  domain: 'YOUR_DOMAIN.us.auth0.com',
+};
+```
+
+#### Auth0 Features
+
+<AccordionGroup>
+  <Accordion title="Single Sign-On (SSO)">
+    Auth0 enables SSO across multiple applications, allowing users to authenticate once and access all connected services.
+  </Accordion>
+  
+  <Accordion title="Multi-Factor Authentication">
+    Add an extra layer of security with MFA options including SMS, authenticator apps, and email verification.
+  </Accordion>
+  
+  <Accordion title="Social Connections">
+    Connect with major identity providers including Google, Facebook, LinkedIn, and more.
+  </Accordion>
+  
+  <Accordion title="Enterprise Connections">
+    Support for SAML, LDAP, and Active Directory for enterprise authentication.
+  </Accordion>
+</AccordionGroup>
+
+## Authentication Flow
+
+<Steps>
+  <Step title="User Initiates Login">
+    User enters credentials or selects social authentication provider.
+  </Step>
+  
+  <Step title="Provider Validation">
+    Authentication provider (Firebase/Auth0) validates credentials.
+  </Step>
+  
+  <Step title="User Status Check">
+    System verifies user account is active in Firestore.
+  </Step>
+  
+  <Step title="Session Creation">
+    User data is loaded and authentication state is dispatched to Redux store.
+  </Step>
+  
+  <Step title="Redirect to Dashboard">
+    User is redirected to the appropriate dashboard based on their account type.
+  </Step>
+</Steps>
+
+## User Account Types
+
+TMT supports different account types with varying levels of access:
+
+| Account Type | Description | Primary Use Case |
+|--------------|-------------|------------------|
+| `Administrador` | Full platform access | System administrators |
+| `Cliente` | Client portal access | Event organizers and clients |
+| `Coordinador` | Event coordination | Event managers |
+| `Contador` | Financial access | Accounting team |
+| `Soporte` | Support access | Customer support staff |
+
+## Security Best Practices
+
+<Warning>
+  **Critical Security Measures**
+  
+  - Always use HTTPS in production environments
+  - Implement rate limiting on authentication endpoints
+  - Enable Firebase App Check to prevent abuse
+  - Regularly audit user access logs
+  - Use strong password policies (minimum 8 characters, mixed case, numbers)
+</Warning>
+
+### Password Reset Flow
+
+Firebase provides built-in password reset functionality:
+
+```javascript
+const ResetPassword = (email) =>
+  firebase.auth().sendPasswordResetEmail(email);
+```
+
+### Session Management
+
+User sessions are managed through Redux state and synchronized with Firebase:
+
+```javascript store/apps/auth/authSlice.js
+const authSlice = createSlice({
+  name: 'auth',
+  initialState: {
+    isAuthenticated: false,
+    isInitialized: false,
+    user: null,
+  },
+  reducers: {
+    authStateChanged(state, action) {
+      const { isAuthenticated, user } = action.payload;
+      state.isAuthenticated = isAuthenticated;
+      state.isInitialized = true;
+      state.user = user;
+    },
+  },
+});
+```
+
+## IP Tracking and Audit Logs
+
+TMT automatically tracks user access for security monitoring:
+
+```javascript
+const queryIP = await fetch('https://ipapi.co/json/');
+const data = await queryIP.json();
+
+await Firestore.collection('u_clients').doc(user.uid).update({
+  "date.last_access": firebase.firestore.FieldValue.serverTimestamp(),
+  last_IP: data.ip
+});
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Users Cannot Sign In">
+    1. Verify Firebase/Auth0 configuration is correct
+    2. Check that user's `status` field is set to `true` in Firestore
+    3. Ensure email is verified (if email verification is enabled)
+    4. Check browser console for authentication errors
+  </Accordion>
+  
+  <Accordion title="Session Expires Too Quickly">
+    Adjust Firebase session duration in Firebase Console under Authentication > Settings > Session Management.
+  </Accordion>
+  
+  <Accordion title="Social Login Not Working">
+    1. Verify OAuth credentials in Firebase Console
+    2. Ensure authorized redirect URIs are configured correctly
+    3. Check that social provider apps are in production mode
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Permissions" icon="key" href="/admin/permissions">
+    Configure role-based access control with CASL
+  </Card>
+  <Card title="Platform Settings" icon="gear" href="/admin/platform-settings">
+    Set up platform-wide configuration
+  </Card>
+</CardGroup>

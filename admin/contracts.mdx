@@ -1,0 +1,439 @@
+---
+title: 'Contract Management'
+description: 'Create and manage contracts and addendums in TradeMaster Transactions'
+icon: 'file-contract'
+---
+
+## Overview
+
+The contract management system in TradeMaster Transactions allows you to create, store, and manage legal agreements with clients. Contracts are stored in Firestore with PDF documents uploaded to Firebase Storage, providing a complete audit trail and easy access to all contractual obligations.
+
+## Contract Structure
+
+### Database Schema
+
+Contracts are stored in the `contracts` collection in Firestore with the following structure:
+
+```json
+{
+  "name": "Event Management Agreement",
+  "description": "Contract for managing XYZ Concert",
+  "user_name": "John Doe Events",
+  "user_id": "abc123",
+  "contract_id": "CON-2024-001",
+  "contract_date": Timestamp,
+  "status": true,
+  "document": "https://storage.googleapis.com/...",
+  "date": {
+    "created": Timestamp
+  }
+}
+```
+
+### Field Definitions
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | String | Contract title |
+| `description` | String | Detailed description of the contract |
+| `user_name` | String | Client name |
+| `user_id` | String | Reference to client document ID |
+| `contract_id` | String | Unique contract identifier |
+| `contract_date` | Timestamp | Date the contract was signed |
+| `status` | Boolean | Active/inactive status |
+| `document` | String | Firebase Storage URL to PDF |
+| `date.created` | Timestamp | When the contract was created in the system |
+
+## Creating Contracts
+
+### Required Permissions
+
+To create contracts, users must have one of these roles:
+- **Administrador** - Full access
+- **Cliente** - Can create their own contracts
+- **Coordinador** - Can create contracts for clients
+
+### Contract Creation Flow
+
+<Steps>
+  <Step title="Select Client">
+    Choose the client associated with this contract from the dropdown list.
+  </Step>
+  
+  <Step title="Set Contract Date">
+    Specify the date the contract was signed or executed.
+  </Step>
+  
+  <Step title="Enter Contract Details">
+    Provide the contract title, unique identifier, and description.
+  </Step>
+  
+  <Step title="Upload PDF Document">
+    Upload the signed contract PDF (required).
+  </Step>
+  
+  <Step title="Submit for Creation">
+    Review and submit to create the contract record.
+  </Step>
+</Steps>
+
+### Implementation Example
+
+The contract creation form uses Formik for validation and Firebase for storage:
+
+```javascript NewContractForm.js
+import * as Yup from 'yup';
+import { useFormik } from 'formik';
+import { Firestore, Storage, firebase } from '../../../guards/firebase/Firebase';
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+
+const newcontractSchema = Yup.object().shape({
+  name: Yup.string().required('El título es requerido'),
+  description: Yup.string().required('Descripción es requerida'),
+  contract_id: Yup.string().required('Identificador de contrato es requerido'),
+});
+
+const formik = useFormik({
+  initialValues: {
+    name: '',
+    description: '',
+    contract_id: '',
+  },
+  validationSchema: newcontractSchema,
+  onSubmit: async (values) => {
+    // Create new document reference
+    const newRef = Firestore.collection('contracts').doc();
+    const newId = newRef.id;
+    
+    // Upload PDF to Firebase Storage
+    const storageRef = ref(Storage, `contracts/${newId}/${file.name}`);
+    await uploadBytes(storageRef, file);
+    const url = await getDownloadURL(storageRef);
+    
+    // Create contract document
+    await Firestore.collection('contracts').doc(newId).set({
+      name: values.name,
+      description: values.description,
+      user_name: selectedClient.name,
+      user_id: selectedClient.client_id,
+      contract_id: values.contract_id,
+      contract_date: firebase.firestore.Timestamp.fromDate(contractDate),
+      status: true,
+      document: url,
+      date: { created: firebase.firestore.FieldValue.serverTimestamp() }
+    });
+  },
+});
+```
+
+## File Upload Handling
+
+### PDF Upload Requirements
+
+<Warning>
+  Only PDF files are accepted for contract documents. The system validates file type before upload.
+</Warning>
+
+### Storage Structure
+
+Contract PDFs are organized in Firebase Storage:
+
+```
+contracts/
+  ├── {contract_id_1}/
+  │   └── contract_document.pdf
+  ├── {contract_id_2}/
+  │   └── agreement.pdf
+  └── {contract_id_3}/
+      └── service_contract.pdf
+```
+
+### Upload Implementation
+
+```javascript
+const handleUpload = async (contractId, file) => {
+  const storageRef = ref(Storage, `contracts/${contractId}/${file.name}`);
+  await uploadBytes(storageRef, file);
+  const downloadUrl = await getDownloadURL(storageRef);
+  return downloadUrl;
+};
+```
+
+## Addendums
+
+### What are Addendums?
+
+Addendums are supplementary agreements that modify or add to existing contracts. They maintain a relationship with the parent contract while providing additional terms or changes.
+
+### Addendum Structure
+
+Addendums follow a similar structure to contracts with additional fields:
+
+```json
+{
+  "parent_contract_id": "abc123",
+  "addendum_number": 1,
+  "title": "Payment Terms Amendment",
+  "description": "Updated payment schedule",
+  "effective_date": Timestamp,
+  "document": "https://storage.googleapis.com/...",
+  "status": true,
+  "date": {
+    "created": Timestamp
+  }
+}
+```
+
+### Creating Addendums
+
+Addendums can be created by:
+- Navigating to an existing contract
+- Clicking "Create Addendum"
+- Filling in addendum details
+- Uploading the addendum PDF
+- Submitting for creation
+
+<Info>
+  Addendums are numbered sequentially and linked to their parent contract for easy reference.
+</Info>
+
+## Viewing Contracts
+
+### Contract List View
+
+The contracts list displays all contracts with filtering and search capabilities:
+
+- Search by contract ID, client name, or title
+- Filter by status (active/inactive)
+- Sort by date, client, or contract ID
+- Quick actions for viewing details
+
+### Contract Detail View
+
+The detail view provides comprehensive information:
+
+<Tabs>
+  <Tab title="Contract Information">
+    - Contract title and ID
+    - Client details and contact info
+    - Contract date and creation date
+    - Description and terms
+    - Current status
+  </Tab>
+  
+  <Tab title="Document Access">
+    - View PDF in browser
+    - Download PDF for offline access
+    - Print contract document
+    - Document version history
+  </Tab>
+  
+  <Tab title="Related Addendums">
+    - List of all addendums
+    - Addendum dates and descriptions
+    - Quick access to addendum documents
+    - Create new addendum
+  </Tab>
+</Tabs>
+
+## Contract Status Management
+
+### Active vs Inactive
+
+Contracts can be marked as active or inactive:
+
+- **Active (`status: true`)**: Currently in effect
+- **Inactive (`status: false`)**: Expired, terminated, or superseded
+
+### Changing Contract Status
+
+```javascript
+await Firestore.collection('contracts').doc(contractId).update({
+  status: false,
+  'date.deactivated': firebase.firestore.FieldValue.serverTimestamp()
+});
+```
+
+<Warning>
+  Only administrators and the contract owner can change contract status.
+</Warning>
+
+## Querying Contracts
+
+### Get All Contracts for a Client
+
+```javascript
+const clientContracts = await Firestore.collection('contracts')
+  .where('user_id', '==', clientId)
+  .where('status', '==', true)
+  .orderBy('contract_date', 'desc')
+  .get();
+```
+
+### Search Contracts by ID
+
+```javascript
+const contract = await Firestore.collection('contracts')
+  .where('contract_id', '==', 'CON-2024-001')
+  .limit(1)
+  .get();
+```
+
+### Get Contracts by Date Range
+
+```javascript
+const startDate = firebase.firestore.Timestamp.fromDate(new Date('2024-01-01'));
+const endDate = firebase.firestore.Timestamp.fromDate(new Date('2024-12-31'));
+
+const contracts = await Firestore.collection('contracts')
+  .where('contract_date', '>=', startDate)
+  .where('contract_date', '<=', endDate)
+  .get();
+```
+
+## Form Validation
+
+### Client-Side Validation
+
+Yup schema ensures data integrity:
+
+```javascript
+const newcontractSchema = Yup.object().shape({
+  name: Yup.string()
+    .required('El título es requerido')
+    .min(5, 'Debe tener al menos 5 caracteres'),
+  description: Yup.string()
+    .required('Descripción es requerida')
+    .min(20, 'Proporcione una descripción detallada'),
+  contract_id: Yup.string()
+    .required('Identificador de contrato es requerido')
+    .matches(/^CON-\d{4}-\d{3}$/, 'Formato: CON-YYYY-XXX'),
+});
+```
+
+### Custom Validations
+
+```javascript
+onSubmit: async (values, { setErrors, setStatus }) => {
+  // Validate client is selected
+  if (!selectedClient) {
+    setErrors({ submit: "El cliente es requerido." });
+    return;
+  }
+  
+  // Validate PDF is uploaded
+  if (selectedFiles.length === 0) {
+    setErrors({ submit: "El documento pdf del contrato es requerido." });
+    return;
+  }
+  
+  // Check for duplicate contract ID
+  const existing = await Firestore.collection('contracts')
+    .where('contract_id', '==', values.contract_id)
+    .limit(1)
+    .get();
+    
+  if (!existing.empty) {
+    setErrors({ contract_id: "Este ID de contrato ya existe" });
+    return;
+  }
+}
+```
+
+## Security Considerations
+
+<AccordionGroup>
+  <Accordion title="Access Control">
+    - Implement Firestore security rules to restrict contract access
+    - Ensure users can only view contracts they're associated with
+    - Use Firebase Storage rules to protect PDF documents
+  </Accordion>
+  
+  <Accordion title="Document Integrity">
+    - Store checksums of uploaded PDFs
+    - Implement version control for contract modifications
+    - Maintain audit logs of all contract changes
+  </Accordion>
+  
+  <Accordion title="Data Privacy">
+    - Encrypt sensitive contract terms
+    - Implement data retention policies
+    - Provide secure sharing mechanisms
+  </Accordion>
+</AccordionGroup>
+
+### Firestore Security Rules Example
+
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /contracts/{contractId} {
+      // Allow read if user is admin, contract owner, or staff
+      allow read: if request.auth != null &&
+        (get(/databases/$(database)/documents/u_clients/$(request.auth.uid)).data.account_type in ['Administrador', 'Contador', 'Coordinador'] ||
+         resource.data.user_id == request.auth.uid);
+      
+      // Allow write if user is admin, contract owner, or coordinator
+      allow write: if request.auth != null &&
+        get(/databases/$(database)/documents/u_clients/$(request.auth.uid)).data.account_type in ['Administrador', 'Cliente', 'Coordinador'];
+    }
+  }
+}
+```
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Consistent Naming" icon="signature">
+    Use a standardized contract ID format (e.g., CON-YYYY-XXX) for easy reference and sorting.
+  </Card>
+  
+  <Card title="Detailed Descriptions" icon="align-left">
+    Provide comprehensive descriptions to make contracts searchable and understandable at a glance.
+  </Card>
+  
+  <Card title="Regular Backups" icon="database">
+    Back up contract documents regularly to prevent data loss.
+  </Card>
+  
+  <Card title="Audit Trail" icon="list-check">
+    Maintain detailed logs of contract creation, modifications, and access.
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="PDF Upload Fails">
+    1. Check file size - ensure it's under Firebase Storage limits (default 10MB for free tier)
+    2. Verify file is actually a PDF
+    3. Check Firebase Storage rules allow uploads
+    4. Ensure stable internet connection
+  </Accordion>
+  
+  <Accordion title="Contract Not Appearing in List">
+    1. Verify contract was successfully created in Firestore
+    2. Check user has permission to view the contract
+    3. Ensure contract status is set correctly
+    4. Clear cache and refresh
+  </Accordion>
+  
+  <Accordion title="Cannot Download PDF">
+    1. Verify Storage URL is accessible
+    2. Check Firebase Storage CORS configuration
+    3. Ensure user is authenticated
+    4. Verify Storage security rules
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Reconciliation" icon="calculator" href="/admin/reconciliation">
+    Learn about financial reconciliation processes
+  </Card>
+  <Card title="Platform Settings" icon="gear" href="/admin/platform-settings">
+    Configure platform-wide settings
+  </Card>
+</CardGroup>

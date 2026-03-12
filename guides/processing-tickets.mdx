@@ -1,0 +1,389 @@
+---
+title: Processing Tickets
+description: Complete guide to ticket search, validation, and status management in TradeMaster Transactions
+---
+
+Tickets are the digital proof of admission to events. TMT provides robust ticket management, validation, and tracking capabilities.
+
+## Ticket Overview
+
+Each ticket in TMT contains:
+- Unique ticket identifier
+- Event information
+- Seat/zone assignment
+- Customer information
+- QR code for validation
+- Status and ledger history
+
+## Searching for Tickets
+
+The ticket search function allows you to quickly find and view any ticket in the system.
+
+<Steps>
+
+### Navigate to Ticket Search
+
+From the main menu, go to **Tickets** > **Search Ticket** or **Consultar Ticket**.
+
+### Enter Ticket Identifier
+
+1. In the search form, enter the ticket ID
+   - Ticket ID is the unique identifier assigned to each ticket
+   - Usually alphanumeric (e.g., "ABC123-456789")
+   - Case-sensitive in some systems
+
+2. Click **Buscar** to search
+
+### View Results
+
+If found, the system displays:
+- Success notification
+- Automatic redirect to ticket detail page
+
+If not found:
+- Error notification
+- "No se ha encontrado ningún ticket con ese identificador"
+- Verify the ticket ID and try again
+
+</Steps>
+
+## Ticket Detail View
+
+The ticket detail page shows comprehensive information across several sections.
+
+### Customer Information
+
+<Note>
+Customer information only displays if the ticket was assigned to a specific customer.
+</Note>
+
+Shows:
+- **Nombre del Cliente**: Customer's full name
+- **ID del Cliente**: Customer identification number
+- **Correo Electrónico**: Email address
+- **Teléfono**: Contact phone number
+
+### Event Information
+
+Displays event details:
+- **Nombre**: Event name
+- **ID**: Ticket ID
+- **Descripción**: Event description
+- **Fecha**: Event date
+- **Hora de Inicio**: Start time
+- **Hora de Finalización**: End time
+
+### Ticket Information
+
+Shows ticket-specific data:
+- **Status Indicator**: Green dot (Active) or Red dot (Inactive)
+- **Identificador**: Ticket's unique ID
+- **Asiento**: Seat number or identifier
+- **Zona**: Zone or section (VIP, General, etc.)
+
+### QR Code
+
+The QR code section displays:
+- Encrypted QR code for validation
+- Scannable at event entrance
+- Contains event-ticket encrypted data
+- Protected with event-specific security pin
+
+<Warning>
+QR codes are encrypted with event-specific keys. They cannot be reused for different events.
+</Warning>
+
+### Ledger History
+
+Tracks all ticket status changes:
+- Creation timestamp
+- Status updates
+- User who made changes
+- Validation records
+- Any modifications
+
+## Changing Ticket Status
+
+Authorized users can update ticket status to manage access and validity.
+
+<Steps>
+
+### Verify Permissions
+
+Ensure you have the "change ticketsStatus" permission. This is typically granted to:
+- Event managers
+- Box office staff
+- Security personnel
+- System administrators
+
+### Access Status Control
+
+On the ticket detail page, locate the **StatusSelect** component (visible only to authorized users).
+
+### Update Status
+
+1. Click the status dropdown
+2. Select the new status:
+   - **Active**: Ticket is valid and can be used
+   - **Inactive**: Ticket is disabled (refunded, cancelled, or invalid)
+
+3. Confirm the change
+
+<Note>
+Status changes are immediately logged in the ticket's ledger with timestamp and user information.
+</Note>
+
+### Status Change Use Cases
+
+**Set to Inactive when:**
+- Ticket was refunded
+- Customer cancelled
+- Duplicate ticket created
+- Event was cancelled
+- Fraudulent ticket detected
+
+**Set to Active when:**
+- Reactivating a previously cancelled ticket
+- Correcting an accidental deactivation
+- Ticket replacement issued
+
+</Steps>
+
+## Ticket Validation at Events
+
+At the event entrance, staff validate tickets using the QR code.
+
+### Validation Process
+
+<Steps>
+
+### Scan QR Code
+
+Using a compatible scanner or mobile device:
+1. Open the validation app/scanner
+2. Scan the ticket's QR code
+3. Wait for system response
+
+### Verify Response
+
+System checks:
+- QR code authenticity (encryption validation)
+- Ticket status (must be active)
+- Event match (ticket is for this event)
+- Not already used (if single-entry)
+
+### Grant or Deny Entry
+
+**Grant entry if:**
+- ✓ QR code is valid
+- ✓ Ticket is active
+- ✓ Matches current event
+- ✓ Not previously validated (or allows re-entry)
+
+**Deny entry if:**
+- ✗ QR code invalid or tampered
+- ✗ Ticket is inactive
+- ✗ Wrong event
+- ✗ Already used (no re-entry)
+- ✗ Outside event time window
+
+</Steps>
+
+### Validation Best Practices
+
+<Tip>
+**Test scanning before doors open**: Ensure all validation devices are working properly with test tickets.
+</Tip>
+
+- Train staff on validation procedures
+- Have backup scanning devices ready
+- Test QR scanner functionality before event
+- Establish a manual verification process for scanner failures
+- Keep security personnel nearby for disputes
+- Document any manual overrides or exceptions
+
+## Ticket Lists and Views
+
+Beyond individual ticket search, TMT provides list views:
+
+### Event Ticket List
+
+View all tickets for a specific event:
+- Navigate to event detail page
+- Click **Tickets** tab
+- See all tickets with filters:
+  - By zone
+  - By status
+  - By customer
+  - By purchase date
+
+### Customer Ticket History
+
+View tickets purchased by a customer:
+- Go to customer profile
+- Click **Tickets** or **Orders** tab
+- See purchase history
+- View ticket status
+
+## Ticket Types and Categories
+
+### By Purchase Method
+
+- **Online sales**: Purchased through web portal
+- **Box office**: Sold at physical location
+- **Comp tickets**: Complimentary/promotional
+- **Group sales**: Bulk purchases
+
+### By Access Level
+
+- **VIP**: Premium access and amenities
+- **General Admission**: Standard entry
+- **Backstage/All Access**: Extended permissions
+- **Press/Media**: Credential-based access
+
+### By Seating
+
+- **Assigned seating**: Specific seat number
+- **General admission**: No assigned seat
+- **Standing room**: No seating, standing area
+- **Flexible**: Choose seat on arrival
+
+## Bulk Ticket Operations
+
+For managing multiple tickets:
+
+### Bulk Status Updates
+
+1. Export ticket list for an event
+2. Filter by criteria (zone, status, etc.)
+3. Select multiple tickets
+4. Apply status change to all selected
+5. Confirm bulk operation
+
+<Warning>
+Bulk operations cannot be undone. Always verify your selection before confirming.
+</Warning>
+
+### Event Cancellation
+
+When cancelling an event:
+1. All tickets are automatically set to inactive
+2. Refund process initiated for paid tickets
+3. Notification sent to all ticket holders
+4. Event status updated to "Cancelado"
+
+## Reporting and Analytics
+
+### Ticket Sales Reports
+
+Generate reports showing:
+- Total tickets sold
+- Revenue by zone
+- Sales velocity over time
+- Remaining capacity
+- Customer demographics
+
+### Validation Reports
+
+Track event attendance:
+- Total validated tickets
+- No-show rate
+- Peak entry times
+- Zone utilization
+- Validation issues encountered
+
+## Troubleshooting
+
+### Ticket Not Found
+
+**Issue**: Search returns no results
+
+**Solutions**:
+- Verify ticket ID is correct
+- Check for typos or extra spaces
+- Confirm ticket exists in the system
+- Try searching by customer name or email
+- Check if ticket was deleted
+
+### QR Code Won't Scan
+
+**Issue**: Validation scanner can't read QR code
+
+**Solutions**:
+- Ensure QR code is clearly visible
+- Clean scanner lens
+- Adjust lighting (avoid glare)
+- Zoom in/out on QR code
+- Try manual entry of ticket ID
+- Use backup validation method
+
+### Cannot Change Status
+
+**Issue**: Status dropdown not visible or disabled
+
+**Solutions**:
+- Verify you have "change ticketsStatus" permission
+- Check if you're logged in with correct account
+- Refresh the page
+- Contact administrator for permission assignment
+
+### Customer Information Missing
+
+**Issue**: Ticket shows no customer data
+
+**Solutions**:
+- This is normal for unassigned tickets
+- Ticket may have been purchased as guest
+- Customer data may not have been collected
+- Check original order for customer info
+
+### Duplicate Tickets
+
+**Issue**: Two tickets with same seat/identifier
+
+**Solutions**:
+- Investigate which is legitimate
+- Check creation timestamps in ledger
+- Deactivate the duplicate
+- Verify payment on both tickets
+- Contact customer if needed
+- Update seat assignment on one ticket
+
+## Security Considerations
+
+### QR Code Security
+
+- QR codes use event-specific encryption keys
+- Keys are securely stored in Firebase
+- Each event has unique security pin
+- Cannot be forged without access to encryption key
+
+### Access Control
+
+- Limit ticket status modification to authorized staff only
+- Use role-based permissions
+- Log all changes in ledger
+- Monitor for suspicious activity
+
+### Fraud Prevention
+
+- Validate QR code encryption on entry
+- Check ticket hasn't been used previously
+- Verify customer ID matches if required
+- Flag unusual patterns (bulk refunds, rapid sales, etc.)
+- Maintain audit trail of all ticket operations
+
+## Integration with Orders
+
+Tickets are generated from orders:
+- Order created when customer purchases
+- Tickets generated for each item
+- Tickets linked to order for refund processing
+- Customer data copied from order to tickets
+
+See [Financial Operations](/guides/financial-operations) for order and payment management.
+
+## Related Resources
+
+- [Creating Events](/guides/creating-events) - Set up events that generate tickets
+- [Financial Operations](/guides/financial-operations) - Manage orders and payments

@@ -1,0 +1,492 @@
+---
+title: Financial Operations
+description: Complete guide to managing payments, payouts, and financial transactions in TradeMaster Transactions
+---
+
+TradeMaster Transactions handles complex financial operations including payment collection, payout distribution, and reconciliation. This guide covers all financial management features.
+
+## Financial Overview
+
+TMT manages multiple financial flows:
+
+- **Payment Methods**: How customers pay for tickets
+- **Payout Methods**: How clients receive their revenue
+- **Custody Accounts**: TMT's accounts for holding funds
+- **Orders**: Ticket purchase transactions
+- **Payouts**: Revenue distribution to clients
+- **Reconciliation**: Matching bank transactions to system records
+
+## Payment Methods
+
+Payment methods define how customers can purchase tickets.
+
+### Creating a Payment Method
+
+<Steps>
+
+### Navigate to Payment Methods
+
+Go to **Payments** > **Payment Methods** > **New Payment Method**.
+
+### Configure Basic Information
+
+In "Datos del Método de pago":
+
+1. **Nombre**: Descriptive name for this payment method
+   - Example: "Visa Credit Card - Venezuela"
+   - Be specific about method and region
+
+2. **Tipo de Pago**: Select payment type
+   - Options: Bank Transfer, Credit Card, Digital Wallet, Cash, etc.
+   - Configured in system setup
+
+3. **Moneda**: Select currency
+   - USD, EUR, VES, or other configured currencies
+   - Must match the custody account currency
+
+4. **Método**: Choose specific payment method
+   - Dropdown populates based on payment type and currency
+   - Examples: Visa, Mastercard, Zelle, PayPal, Bank Transfer
+
+<Note>
+You must select payment type and currency before the method dropdown becomes available.
+</Note>
+
+5. **Cuenta Custodio**: Select custody account
+   - Choose the TMT account that will receive these payments
+   - Must match payment type and currency
+   - Custody accounts defined in system configuration
+
+6. **Porcentaje**: Set fee adjustment percentage
+   - Platform fee or convenience fee
+   - Integer value between 0-100
+   - Applied to transaction total
+   - Example: 3 = 3% fee
+
+### Enter Payment Method Details
+
+In the "Datos" section, fill in method-specific fields:
+
+**For Bank Transfers:**
+- Bank name
+- Account number
+- Routing/SWIFT code
+- Account holder name
+
+**For Credit Cards:**
+- Merchant account ID
+- Terminal ID
+- Processor details
+
+**For Digital Wallets:**
+- Email or phone
+- Account ID
+- Wallet provider details
+
+<Tip>
+Field requirements vary based on selected method. The form dynamically shows only relevant fields.
+</Tip>
+
+### Save Payment Method
+
+1. Review all information
+2. Verify custody account is correct
+3. Click **Guardar**
+4. Method becomes available for event configuration
+
+</Steps>
+
+### Payment Method Management
+
+- **Status**: Toggle active/inactive
+- **Edit**: Update details, percentage, or custody account
+- **View details**: See full configuration
+- **Transaction history**: Track usage and volume
+
+## Payout Methods
+
+Payout methods define how TMT sends revenue to clients.
+
+### Creating a Payout Method
+
+<Steps>
+
+### Navigate to Payout Methods
+
+Go to **Payouts** > **Payout Methods** > **New Payout Method**.
+
+### Configure Payout Details
+
+In "Datos de la Cuenta de Pago":
+
+1. **Nombre**: Identifying name for this payout method
+   - Example: "Client ABC - USD Wire Transfer"
+   - Include client name and payment type
+
+2. **Tipo de Pago**: Select payout type
+   - Bank Transfer, Digital Wallet, Check, etc.
+   - Must match available payout providers
+
+3. **Moneda**: Choose currency
+   - Must match client's preferred currency
+   - Affects exchange rates and fees
+
+4. **Método**: Select specific payout method
+   - Dropdown populated by type and currency
+   - Examples: Wire Transfer, ACH, PayPal, Zelle
+
+### Enter Payout Data
+
+In "Datos Del método de pago":
+
+Provide method-specific information:
+
+**For Bank Payouts:**
+- Bank name (from configured bank list)
+- Account number
+- Account holder name
+- Account type (savings/checking)
+- Routing number
+
+**For Digital Wallet Payouts:**
+- Email address
+- Phone number
+- Account ID
+- Wallet holder name
+
+<Warning>
+Verify all payout details carefully. Incorrect information can cause payment delays or failures.
+</Warning>
+
+### Save Payout Method
+
+1. Double-check all account information
+2. Verify currency selection
+3. Click **Guardar**
+4. Method available for client payout assignments
+
+</Steps>
+
+### Payout Method Security
+
+- Only authorized users can create payout methods
+- All changes logged with user and timestamp
+- Sensitive data encrypted in storage
+- Requires verification before first use
+- Regular audit of active methods
+
+## Processing Orders and Payments
+
+### Order Lifecycle
+
+1. **Order Created**: Customer initiates ticket purchase
+2. **Payment Pending**: Awaiting payment confirmation
+3. **Payment Received**: Funds received in custody account
+4. **Tickets Issued**: QR codes generated and sent
+5. **Order Complete**: Transaction finalized
+
+### Viewing Orders
+
+Access orders through:
+- **Event detail** > Orders tab
+- **Customer profile** > Orders tab
+- **Orders** menu > All orders
+
+Order details include:
+- Order ID and date
+- Customer information
+- Items purchased (tickets)
+- Payment method used
+- Total amount
+- Payment status
+- Transaction ID
+
+### Payment Status Types
+
+- **Pending**: Payment initiated but not confirmed
+- **Completed**: Successfully processed
+- **Failed**: Payment declined or error occurred
+- **Refunded**: Payment returned to customer
+- **Partially Refunded**: Some amount returned
+
+## Managing Payouts
+
+Payouts distribute event revenue to clients according to contract terms.
+
+### Creating a Payout
+
+Payouts are typically generated automatically based on:
+- Event completion
+- Contract payment schedule
+- Revenue reconciliation
+- Minimum payout threshold
+
+### Manual Payout Creation
+
+<Steps>
+
+### Access Payouts
+
+Navigate to **Payouts** > **New Payout**.
+
+### Select Event and Client
+
+1. Choose the event to pay out
+2. Verify client information
+3. Review contract terms
+
+### Calculate Payout Amount
+
+System automatically calculates:
+- Gross ticket revenue
+- Platform fees
+- Payment processing fees
+- Applicable taxes
+- Contract percentage split
+- **Net payout to client**
+
+### Verify Details
+
+Confirm:
+- Payout method (bank account, etc.)
+- Amount is correct
+- Currency matches
+- Client contact information
+
+### Approve and Process
+
+1. Review all calculations
+2. Get necessary approvals
+3. Click **Process Payout**
+4. System initiates transfer
+
+</Steps>
+
+### Payout Status Tracking
+
+- **Pending**: Awaiting approval
+- **Approved**: Ready for processing
+- **Processing**: Transfer initiated
+- **Completed**: Funds delivered
+- **Failed**: Transfer failed, requires action
+- **Cancelled**: Payout cancelled
+
+### Payout Detail View
+
+Shows:
+- Event information
+- Client details
+- Gross revenue
+- Fee breakdown
+- Net payout amount
+- Payment method
+- Status and timeline
+- Transaction reference
+
+## Custody Accounts
+
+Custody accounts are TMT's accounts for holding funds between collection and payout.
+
+### Account Purpose
+
+- Receive customer payments
+- Hold funds during event period
+- Source for client payouts
+- Facilitate reconciliation
+- Support multiple currencies
+
+### Account Management
+
+For each custody account, track:
+- Account balance
+- Transaction history
+- Reconciliation status
+- Associated payment methods
+- Currency
+- Bank or institution
+
+## Bank Reconciliation
+
+Reconciliation matches bank transactions to system records.
+
+### Reconciliation Process
+
+<Steps>
+
+### Upload Bank Documents
+
+1. Navigate to **Reconciliation** > **Upload Bank Documents**
+2. Select bank and account
+3. Choose date range
+4. Upload bank statement (PDF or CSV)
+5. System parses transactions
+
+### Review Conciliated Transactions
+
+In **Conciliated** tab:
+- View automatically matched transactions
+- Verify amounts match
+- Confirm dates align
+- Check reference numbers
+
+### Handle Non-Conciliated Items
+
+In **Not Conciliated** tabs:
+
+**Bank transactions without system match:**
+- Investigate source
+- Manual matching if found
+- Flag as discrepancy
+- Add missing order/payment
+
+**System records without bank confirmation:**
+- Check for payment delays
+- Verify payment method
+- Follow up with payment processor
+- Contact customer if needed
+
+### Complete Reconciliation
+
+1. Resolve all discrepancies
+2. Document any exceptions
+3. Approve reconciliation
+4. Generate reconciliation report
+
+</Steps>
+
+### Reconciliation Best Practices
+
+<Tip>
+**Reconcile frequently**: Daily or weekly reconciliation catches issues early and simplifies problem resolution.
+</Tip>
+
+- Reconcile at least weekly
+- Document all manual matches
+- Investigate discrepancies immediately
+- Keep detailed records
+- Separate duties (different people reconcile vs. process)
+
+## Financial Reports
+
+Generate reports for:
+
+### Revenue Reports
+
+- Total sales by event
+- Sales by payment method
+- Revenue by zone/ticket type
+- Sales velocity over time
+- Projected vs. actual revenue
+
+### Payout Reports
+
+- Payouts by client
+- Payouts by time period
+- Pending payouts
+- Payout success rate
+- Average payout time
+
+### Reconciliation Reports
+
+- Conciliated transactions
+- Outstanding discrepancies
+- Manual matches log
+- Exception summary
+- Account balances
+
+### Fee Reports
+
+- Platform fees collected
+- Payment processing fees
+- Net vs. gross revenue
+- Fee percentage by method
+
+## Best Practices
+
+### Payment Security
+
+- Use PCI-compliant payment processors
+- Never store full credit card numbers
+- Encrypt sensitive financial data
+- Require strong authentication
+- Monitor for fraud patterns
+- Maintain PCI DSS compliance
+
+### Payout Accuracy
+
+- Double-check all payout details
+- Verify bank information with clients
+- Test small amount before large payouts
+- Maintain clear contract terms
+- Document all fee calculations
+- Get client approval on payout amounts
+
+### Financial Records
+
+- Keep detailed transaction logs
+- Archive bank statements
+- Document all manual adjustments
+- Maintain audit trail
+- Regular backups of financial data
+- Retain records per legal requirements
+
+### Multi-Currency Handling
+
+- Clearly display currency in all interfaces
+- Use accurate exchange rates
+- Document rate source and timestamp
+- Account for currency conversion fees
+- Reconcile in original currency when possible
+
+## Troubleshooting
+
+### Payment Method Not Available
+
+**Issue**: Method doesn't appear in event setup
+
+**Solutions**:
+- Check method status is active
+- Verify currency matches event needs
+- Confirm custody account is configured
+- Ensure method type is supported
+
+### Payout Failed
+
+**Issue**: Payout marked as failed
+
+**Solutions**:
+- Verify account details are correct
+- Check account is active and accepting deposits
+- Confirm sufficient funds in custody account
+- Review for holds or restrictions
+- Contact bank or payment processor
+- Retry with updated information
+
+### Reconciliation Discrepancies
+
+**Issue**: Transactions don't match
+
+**Solutions**:
+- Check for timing differences (payment processing delays)
+- Verify amount includes/excludes fees correctly
+- Look for duplicate entries
+- Confirm currency conversions
+- Check reference numbers and IDs
+- Contact payment processor for details
+
+### Missing Transactions
+
+**Issue**: Order in system but no bank deposit
+
+**Solutions**:
+- Check payment status (may be pending)
+- Verify payment method was charged successfully
+- Contact payment processor
+- Review for refunds or chargebacks
+- Check if deposited to different account
+
+## Related Resources
+
+- [Managing Users](/guides/managing-users) - Set up clients who receive payouts
+- [Creating Events](/guides/creating-events) - Configure event payment methods
+- [Processing Tickets](/guides/processing-tickets) - Tickets generated from orders

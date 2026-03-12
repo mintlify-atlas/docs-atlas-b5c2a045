@@ -1,0 +1,395 @@
+---
+title: 'User Components'
+description: 'React components for managing staff, clients, collaborators, and customers in TradeMaster Transactions'
+---
+
+## Overview
+
+The User Components library provides comprehensive React components for managing different types of users in the TradeMaster Transactions platform, including staff members, clients, collaborators, and customers.
+
+## ClientsTableList
+
+A data table component for displaying and managing client users with search, filter, and export capabilities.
+
+### Props
+
+This component doesn't accept props as it connects directly to Redux state.
+
+<ParamField path="Internal State" type="object">
+  <ParamField path="loading" type="boolean">
+    Loading state for data fetching
+  </ParamField>
+  <ParamField path="totalRecords" type="number">
+    Total number of client records
+  </ParamField>
+  <ParamField path="filters" type="object">
+    DataTable filter configuration with global search support
+  </ParamField>
+  <ParamField path="globalFilterValue" type="string">
+    Current value of the global search filter
+  </ParamField>
+</ParamField>
+
+### Features
+
+- **Global Search**: Search across name, email, status, and last access date
+- **Sortable Columns**: All columns support sorting
+- **Pagination**: Configurable rows per page (10, 15, 20)
+- **CSV Export**: Export client data to CSV format
+- **Status Indicators**: Visual chips showing active/inactive status
+- **Avatar Display**: User profile images with fallback
+- **Permission-based Actions**: Create button visible only with proper permissions
+
+### Usage Example
+
+```jsx
+import ClientsTableList from 'src/components/apps/users/Clients/ClientsTableList';
+import { Provider } from 'react-redux';
+import store from 'src/store/Store';
+
+function ClientsPage() {
+  return (
+    <Provider store={store}>
+      <ClientsTableList />
+    </Provider>
+  );
+}
+```
+
+### Data Structure
+
+The component expects client data in the following format:
+
+```typescript
+interface Client {
+  id: string;
+  name: string;
+  email: string;
+  image: string;
+  account_type: string;
+  status: boolean;
+  date: {
+    last_access: string;
+  };
+}
+```
+
+### Columns
+
+| Column | Field | Sortable | Filterable |
+|--------|-------|----------|------------|
+| Nombre (Name) | `name` | ✓ | ✓ |
+| Último Acceso (Last Access) | `date.last_access` | ✓ | ✓ |
+| Estatus (Status) | `status` | ✓ | ✓ |
+| Correo Electrónico (Email) | `email` | ✓ | ✓ |
+| Acciones (Actions) | - | - | - |
+
+---
+
+## StaffTableList
+
+A data table component for displaying and managing staff users.
+
+### Props
+
+This component doesn't accept props as it connects directly to Redux state.
+
+### Features
+
+- **Redux Integration**: Fetches staff data from `StaffSlice`
+- **Search & Filter**: Global search across multiple fields
+- **CSV Export**: Export functionality for staff data
+- **Status Management**: Visual status indicators
+- **Permission Controls**: CASL-based permission checks for create actions
+
+### Usage Example
+
+```jsx
+import StaffTableList from 'src/components/apps/users/Staff/StaffTableList';
+import { AbilityContext } from 'src/guards/contexts/AbilityContext';
+
+function StaffManagementPage() {
+  return (
+    <AbilityContext.Provider value={ability}>
+      <StaffTableList />
+    </AbilityContext.Provider>
+  );
+}
+```
+
+### Data Structure
+
+```typescript
+interface Staff {
+  id: string;
+  name: string;
+  email: string;
+  image: string;
+  account_type: string;
+  status: boolean;
+  date: {
+    last_access: string;
+  };
+}
+```
+
+---
+
+## CollaboratorsTableList
+
+Manages collaborator users with client-specific filtering.
+
+### Props
+
+This component doesn't accept props but uses authentication context to filter collaborators by client.
+
+### Features
+
+- **Client Filtering**: Automatically filters collaborators by authenticated client
+- **User Authentication**: Integrates with `useAuth` hook
+- **Permission-based UI**: Create button shown only with `usersCollaborators` permission
+- **Avatar Support**: Displays user profile images
+
+### Usage Example
+
+```jsx
+import CollaboratorsTableList from 'src/components/apps/users/Collaborators/CollaboratorsTableList';
+
+function CollaboratorsPage() {
+  return <CollaboratorsTableList />;
+}
+```
+
+### Data Structure
+
+```typescript
+interface Collaborator {
+  uid: string;
+  name: string;
+  email: string;
+  image: string;
+  account_type: string;
+  status: boolean;
+  client: {
+    client_id: string;
+  };
+  date: {
+    last_access: string;
+  };
+}
+```
+
+---
+
+## CustomerTableList
+
+Displays and manages customer (buyer) accounts.
+
+### Props
+
+This component doesn't accept props as it connects directly to Redux state.
+
+### Features
+
+- **Simplified Interface**: No create button (customers self-register)
+- **CSV Export**: Export customer data
+- **Date Tracking**: Shows creation date instead of last access
+- **Status Indicators**: Visual active/inactive status chips
+
+### Usage Example
+
+```jsx
+import CustomerTableList from 'src/components/apps/users/Customers/CustomerTableList';
+
+function CustomersPage() {
+  return <CustomerTableList />;
+}
+```
+
+### Data Structure
+
+```typescript
+interface Customer {
+  uid: string;
+  name: string;
+  email: string;
+  status: boolean;
+  date: {
+    created: string;
+  };
+}
+```
+
+### Columns
+
+| Column | Field | Sortable |
+|--------|-------|----------|
+| Nombre (Name) | `name` | ✓ |
+| Fecha Creación (Creation Date) | `date.created` | ✓ |
+| Estatus (Status) | `status` | ✓ |
+| Correo Electrónico (Email) | `email` | ✓ |
+| Acciones (Actions) | - | - |
+
+---
+
+## ProfileBanner
+
+Displays user profile information with banner image and statistics.
+
+### Props
+
+<ParamField path="userData" type="object" required>
+  User data object containing profile information
+</ParamField>
+
+### Features
+
+- **Banner Image**: Customizable cover photo
+- **Profile Avatar**: Circular profile image with gradient border
+- **Statistics Display**: Shows contracts and events count for clients
+- **Loading States**: Skeleton loading animations
+- **Responsive Design**: Adapts to different screen sizes
+
+### Usage Example
+
+```jsx
+import ProfileBanner from 'src/components/apps/users/Clients/clients-detail/ProfileBanner';
+
+function ClientDetailPage({ clientData }) {
+  return <ProfileBanner userData={clientData} />;
+}
+```
+
+---
+
+## NewUserClientForm
+
+Form component for creating new client users with comprehensive validation.
+
+### Features
+
+- **File Uploads**: Support for multiple document types (commercial registry, assembly minutes, fiscal info, commercial license)
+- **Image Upload**: Profile image with 2MB size limit
+- **Phone Number**: Custom phone field with formatting
+- **Location Support**: Integration with setup locations
+- **Form Validation**: Yup schema validation
+- **Confirmation Dialog**: Prevents accidental navigation
+
+### Usage Example
+
+```jsx
+import NewUserClientForm from 'src/components/apps/users/NewUsers/NewUserClientForm';
+
+function CreateClientPage() {
+  return <NewUserClientForm />;
+}
+```
+
+### Required Fields
+
+- Name
+- Email
+- Phone
+- Location
+- Account type
+- Commercial registry document
+- Assembly minutes document
+- Fiscal information document
+- Commercial license document
+
+---
+
+## Common Patterns
+
+### Theme Integration
+
+All components use Material-UI's `useTheme` hook for consistent styling:
+
+```jsx
+const theme = useTheme();
+
+const tableStyles = {
+  '& .p-datatable-thead > tr > th': {
+    background: theme.palette.mode === 'dark' 
+      ? theme.palette.background.default 
+      : '#f5f7fa',
+  }
+};
+```
+
+### Redux Integration
+
+Components use Redux for state management:
+
+```jsx
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchClientsUsers } from 'src/store/apps/Users/ClientsSlice';
+
+const dispatch = useDispatch();
+const getClients = useSelector((state) => state.clients.Clients);
+
+React.useEffect(() => {
+  dispatch(fetchClientsUsers());
+}, [dispatch]);
+```
+
+### Permission Checks
+
+Using CASL for permission-based rendering:
+
+```jsx
+import { Can } from '@casl/react';
+import { AbilityContext } from 'src/guards/contexts/AbilityContext';
+
+const ability = React.useContext(AbilityContext);
+
+<Can I="create" a="usersClients" ability={ability}>
+  <Button>Crear Usuario</Button>
+</Can>
+```
+
+### Navigation
+
+All components use React Router for navigation:
+
+```jsx
+import { useNavigate } from 'react-router';
+
+const navigate = useNavigate();
+
+const handleClickDetail = (event, id) => {
+  navigate(`/usuarios-detalle-cliente?id=${id}`);
+};
+```
+
+---
+
+## Styling
+
+Components use a consistent styling approach combining:
+
+- **Material-UI**: Component library and theming
+- **PrimeReact**: DataTable components
+- **Custom Styles**: Theme-aware style objects
+- **Dark Mode Support**: All components support dark/light themes
+
+### Status Chips
+
+Reusable status chip pattern:
+
+```jsx
+const StatusChip = ({ status }) => (
+  <Chip
+    label={status ? 'Activo' : 'Inactivo'}
+    size="small"
+    sx={{
+      backgroundColor: status 
+        ? 'rgba(46, 204, 113, 0.1)'
+        : 'rgba(231, 76, 60, 0.1)',
+      color: status 
+        ? theme.palette.success.main
+        : theme.palette.error.main,
+    }}
+  />
+);
+```

@@ -1,0 +1,308 @@
+---
+title: Creating Events
+description: Step-by-step guide to creating and configuring events in TradeMaster Transactions
+---
+
+Events are the core of TradeMaster Transactions. This guide walks you through creating a new event from start to finish.
+
+## Before You Begin
+
+Ensure you have:
+- Active client account with valid contracts
+- At least one event venue configured
+- Legal contract associated with the client
+- Event banner image ready (recommended: 2500x900 pixels)
+
+## Creating an Event
+
+<Steps>
+
+### Navigate to Events
+
+From the main menu, go to **Events** > **New Event**.
+
+### Select Client and Contracts
+
+In the "Datos" section:
+
+1. **Cliente**: Select the event producer/client from the dropdown
+   - Only clients with active contracts will have events enabled
+
+2. **Contratos**: Select one or more contracts that apply to this event
+   - Click the dropdown to see available contracts
+   - Check multiple contracts if needed
+   - At least one contract is required
+
+<Note>
+Contracts define revenue sharing, payment terms, and other financial arrangements for the event.
+</Note>
+
+3. **Contrato Legal**: Select the legal framework contract
+   - This defines terms and conditions, liability, and legal aspects
+   - Must be configured before event creation
+
+### Choose Event Venue
+
+4. **Sala de Evento**: Select the venue where the event will take place
+   - Only active venues appear in the dropdown
+   - Venue capacity is automatically applied to the event
+   - See [Configuring Venues](/guides/configuring-venues) for venue management
+
+### Upload Event Banner
+
+<Warning>
+An event banner is required and cannot be skipped.
+</Warning>
+
+In the "Banner del Evento" section:
+
+1. Click **Cargar** to select an image file
+2. Choose a JPG, PNG, or GIF file (max 2MB)
+3. Preview the banner
+4. Click **Reiniciar** to remove and replace if needed
+
+**Banner Requirements:**
+- Format: JPG, PNG, or GIF
+- Max size: 2MB
+- Recommended dimensions: 2500x900 pixels
+- Clear, high-quality image representing the event
+
+### Enter Event Details
+
+In "Datos del Evento":
+
+1. **Nombre**: Enter the event name
+   - Use the official event name
+   - This appears on tickets and public listings
+
+2. **Tipo de Evento**: Select event type
+   - Options configured in system setup
+   - Examples: Concierto, Conferencia, Teatro, etc.
+
+3. **Fecha de Inicio**: Set start date and time
+   - Click the date picker
+   - Must be in the future
+   - Includes date and time
+
+4. **Fecha de Cierre**: Set end date and time
+   - Must be same or after start date
+   - System automatically validates this
+
+5. **Descripción**: Write a detailed event description
+   - Explain what attendees can expect
+   - Include any special information
+   - Keep it concise but informative
+
+### Add Event Information
+
+In "Información del evento":
+
+1. **Actividad Principal**: Main act or activity
+   - Example: "Bad Bunny en concierto"
+   - Main headliner or primary activity
+
+2. **Actividad Secundaria**: Supporting act or secondary activity
+   - Opening acts
+   - Supporting activities
+   - Additional entertainment
+
+3. **Términos y Condiciones**: Event-specific terms
+   - Entry requirements
+   - Age restrictions
+   - Prohibited items
+   - Refund policies
+   - Behavior rules
+
+<Tip>
+Be comprehensive with terms and conditions - they protect both you and attendees.
+</Tip>
+
+4. **Descripción**: Additional event description
+   - Artist/performer background
+   - Event format details
+   - What makes this event special
+
+### Review and Submit
+
+1. Review all entered information carefully
+2. Ensure banner image is uploaded
+3. Verify all required fields are complete
+4. Click **Guardar** to create the event
+
+<Note>
+After creation, the event status is automatically set to "Instanciado" (Instantiated).
+</Note>
+
+### Post-Creation Setup
+
+After the event is created, you'll need to:
+- Configure ticket zones and pricing
+- Set up seating arrangements
+- Configure payment methods
+- Define ticket sales periods
+- Set capacity limits per zone
+
+</Steps>
+
+## Event Status Workflow
+
+Events progress through these statuses:
+
+1. **Instanciado**: Just created, setup in progress
+2. **Configurado**: Fully configured, ready for sales
+3. **En Venta**: Actively selling tickets
+4. **Finalizado**: Event has occurred
+5. **Cancelado**: Event was cancelled
+
+## Event Configuration Areas
+
+After creating an event, configure these key areas:
+
+### Ticket Zones
+
+Define seating areas:
+- Zone names (VIP, General, Palco, etc.)
+- Capacity per zone
+- Pricing per zone
+- Zone-specific rules
+
+### Payment Methods
+
+Enable payment options:
+- Credit/debit cards
+- Bank transfers
+- Digital wallets
+- Cash payments (if applicable)
+
+### Credentials
+
+Manage access:
+- Staff credentials
+- Security team access
+- Vendor permissions
+- Media/press passes
+
+### Orders
+
+Monitor ticket sales:
+- View all orders
+- Track payment status
+- Manage refunds
+- Export sales data
+
+## Managing Event Details
+
+Access the event detail page to:
+
+- **Edit event information**: Update dates, descriptions, or terms
+- **View revenue updates**: Real-time sales tracking
+- **Monitor ticket status**: Sold, available, reserved
+- **Manage contracts**: View associated contracts
+- **Track ledger**: See all event status changes
+
+### Event Metadata Display
+
+The event detail page shows:
+- Client information
+- Venue details and capacity
+- Start and end dates/times
+- Event type and status
+- Associated contracts
+- Revenue statistics
+- Top performers (most popular zones/tickets)
+
+## Best Practices
+
+### Planning
+
+<Tip>
+**Create events early**: Set up events well in advance to allow time for proper configuration and testing.
+</Tip>
+
+- Create events at least 2-4 weeks before the date
+- Test ticket purchasing flow before going live
+- Have all contracts finalized before event creation
+- Coordinate with venues on capacity and layout
+
+### Banner Design
+
+- Use high-resolution images for clarity
+- Include key information: artist, date, venue
+- Maintain brand consistency
+- Test banner display on mobile devices
+- Ensure text is readable at various sizes
+
+### Terms and Conditions
+
+- Be specific about entry requirements
+- Clearly state refund and exchange policies
+- Include COVID-19 or health policies if applicable
+- List prohibited items explicitly
+- Define photography/recording rules
+
+### Pricing Strategy
+
+- Research market rates for similar events
+- Consider venue size and artist popularity
+- Set early bird pricing for advance sales
+- Create VIP packages with added value
+- Account for platform fees in pricing
+
+## Troubleshooting
+
+### Cannot Create Event
+
+**Issue**: Save button is disabled or form won't submit
+
+**Solutions**:
+- Ensure a banner image is uploaded
+- Check all required fields are filled
+- Verify at least one contract is selected
+- Confirm legal contract is selected
+- Make sure end date is after start date
+
+### No Contracts Available
+
+**Issue**: Contract dropdown is empty
+
+**Solutions**:
+- Verify client has active contracts in the system
+- Check contracts haven't expired
+- Ensure you selected a client first
+- Contact admin to create contracts if needed
+
+### Banner Upload Fails
+
+**Issue**: Image won't upload or shows error
+
+**Solutions**:
+- Check file size is under 2MB
+- Verify file format is JPG, PNG, or GIF
+- Try resizing or compressing the image
+- Clear browser cache and try again
+- Use a different browser if issue persists
+
+### Date Validation Errors
+
+**Issue**: Cannot set event dates
+
+**Solutions**:
+- Ensure start date is in the future
+- Verify end date is same day or after start date
+- Check time is set correctly (not just date)
+- Refresh page if date picker seems stuck
+
+## Event Cloning
+
+For recurring events, you can:
+- Duplicate an existing event
+- Update dates and specific details
+- Keep venue and contract configurations
+- Reuse banner if appropriate
+- Adjust pricing for new instance
+
+## Related Resources
+
+- [Configuring Venues](/guides/configuring-venues) - Set up event venues
+- [Processing Tickets](/guides/processing-tickets) - Manage ticket sales and validation
+- [Financial Operations](/guides/financial-operations) - Handle payments and payouts

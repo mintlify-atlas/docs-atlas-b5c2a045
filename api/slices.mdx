@@ -1,0 +1,889 @@
+---
+title: 'Redux Slices'
+description: 'Documentation of Redux Toolkit slices for state management in TMT'
+icon: 'layer-group'
+---
+
+## Overview
+
+TMT uses Redux Toolkit slices to organize state management into modular, domain-specific units. Each slice contains the state shape, reducers, and actions for a specific feature area.
+
+## Authentication Slice
+
+Manages user authentication state and session information.
+
+### State Shape
+
+```javascript authSlice.js:4-8
+const initialState = {
+    isAuthenticated: false,
+    isInitialized: false,
+    user: null,
+};
+```
+
+<ResponseField name="isAuthenticated" type="boolean" default="false">
+  Whether the user is currently authenticated
+</ResponseField>
+
+<ResponseField name="isInitialized" type="boolean" default="false">
+  Whether the authentication system has been initialized
+</ResponseField>
+
+<ResponseField name="user" type="object | null" default="null">
+  Current user object with profile information and timestamps
+</ResponseField>
+
+### Actions
+
+#### authStateChanged
+
+Updates authentication state when user signs in/out.
+
+```javascript authSlice.js:14-33
+authStateChanged(state, action) {
+    const { isAuthenticated, user } = action.payload;
+
+    if(user !== null){
+        const convertTimestamp = (timestamp) => {
+            if (timestamp && timestamp.seconds) {
+                const date = new Date(timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000);
+                return moment(date).format('DD/MM/YYYY - hh:mm:ss a');
+            }
+            return null;
+        };
+
+        user.date.last_update = convertTimestamp(user.date?.last_update)
+        user.date.last_access = convertTimestamp(user.date?.last_access)
+    }
+
+    state.isAuthenticated = isAuthenticated;
+    state.isInitialized = true;
+    state.user = user;
+}
+```
+
+<ParamField path="payload.isAuthenticated" type="boolean" required>
+  Authentication status
+</ParamField>
+
+<ParamField path="payload.user" type="object | null" required>
+  User object with profile data, automatically converts Firebase timestamps
+</ParamField>
+
+### Usage Example
+
+```javascript
+import { useDispatch, useSelector } from 'react-redux';
+import { authStateChanged } from './store/apps/auth/authSlice';
+
+function AuthProvider({ children }) {
+  const dispatch = useDispatch();
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
+  
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      dispatch(authStateChanged({
+        isAuthenticated: !!firebaseUser,
+        user: firebaseUser,
+      }));
+    });
+    return unsubscribe;
+  }, []);
+  
+  return children;
+}
+```
+
+## Staff Slice
+
+Manages staff user data and search functionality.
+
+### State Shape
+
+```javascript StaffSlice.js:5-9
+const initialState = {
+  staff: [],
+  StaffSearch: '',
+  error: ''
+};
+```
+
+<ResponseField name="staff" type="array" default="[]">
+  Array of staff user objects
+</ResponseField>
+
+<ResponseField name="StaffSearch" type="string" default="''">
+  Current search query for filtering staff
+</ResponseField>
+
+<ResponseField name="error" type="string" default="''">
+  Error message if staff fetch fails
+</ResponseField>
+
+### Actions
+
+#### getStaff
+
+Stores fetched staff users in state.
+
+```javascript StaffSlice.js:20-22
+getStaff: (state, action) => {
+  state.staff = action.payload;
+}
+```
+
+#### SearchStaff
+
+Updates the staff search query.
+
+```javascript StaffSlice.js:23-25
+SearchStaff: (state, action) => {
+  state.StaffSearch = action.payload;
+}
+```
+
+#### hasError
+
+Stores error information.
+
+```javascript StaffSlice.js:16-18
+hasError(state, action) {
+  state.error = action.payload;
+}
+```
+
+### Async Thunks
+
+#### fetchStaffUsers
+
+Fetches all staff users from Firestore with timestamp conversion.
+
+```javascript StaffSlice.js:34-66
+export const fetchStaffUsers = () => async (dispatch) => {
+  try {
+    const querySnapshot = await Firestore.collection('u_staff').get();
+
+    const staffArray = querySnapshot.docs.map((doc) => {
+      const data = doc.data();
+
+      const convertTimestamp = (timestamp) => {
+        if (timestamp && timestamp.seconds) {
+          const date = new Date(timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000);
+          return moment(date).format('DD/MM/YYYY hh:mm:ss a');
+        }
+        return null;
+      };
+
+      const date = {
+        last_access: convertTimestamp(data.date?.last_access),
+        last_update: convertTimestamp(data.date?.last_update),
+      };
+
+      return {
+        id: doc.id,
+        ...data,
+        date,
+      };
+    });
+
+    dispatch(getStaff(staffArray));
+  } catch (error) {
+    dispatch(hasError(error));
+  }
+};
+```
+
+## Clients Slice
+
+Manages client user data with similar structure to Staff slice.
+
+### State Shape
+
+```javascript ClientsSlice.js:5-9
+const initialState = {
+  Clients: [],
+  ClientsSearch: '',
+  error: ''
+};
+```
+
+<ResponseField name="Clients" type="array" default="[]">
+  Array of client user objects
+</ResponseField>
+
+<ResponseField name="ClientsSearch" type="string" default="''">
+  Current search query for filtering clients
+</ResponseField>
+
+<ResponseField name="error" type="string" default="''">
+  Error message if clients fetch fails
+</ResponseField>
+
+### Actions & Thunks
+
+- **getClients** - Stores fetched clients
+- **SearchClients** - Updates search query
+- **hasError** - Stores error information
+- **fetchClientsUsers()** - Async thunk to fetch all clients from `u_clients` collection
+
+## Events Slice
+
+Manages event data with support for multiple event collections.
+
+### State Shape
+
+```javascript EventsSlice.js:5-11
+const initialState = {
+  Events: [],
+  ActiveEvents: [],
+  ClientEvents: [],
+  EventsSearch: '',
+  error: ''
+};
+```
+
+<ResponseField name="Events" type="array" default="[]">
+  All events in the system
+</ResponseField>
+
+<ResponseField name="ActiveEvents" type="array" default="[]">
+  Events with status "Activo"
+</ResponseField>
+
+<ResponseField name="ClientEvents" type="array" default="[]">
+  Events filtered by client ID
+</ResponseField>
+
+<ResponseField name="EventsSearch" type="string" default="''">
+  Search query for filtering events
+</ResponseField>
+
+<ResponseField name="error" type="string" default="''">
+  Error message if events fetch fails
+</ResponseField>
+
+### Actions
+
+#### getEvents
+
+Stores all fetched events.
+
+```javascript EventsSlice.js:22-24
+getEvents: (state, action) => {
+  state.Events = action.payload;
+}
+```
+
+#### getActiveEvents
+
+Stores active events only.
+
+```javascript EventsSlice.js:25-27
+getActiveEvents: (state, action) => {
+  state.ActiveEvents = action.payload;
+}
+```
+
+#### getClientEvents
+
+Stores events for a specific client.
+
+```javascript EventsSlice.js:28-30
+getClientEvents: (state, action) => {
+  state.ClientEvents = action.payload;
+}
+```
+
+### Async Thunks
+
+#### fetchEvents(id)
+
+Fetches all events, optionally filtered by venue ID.
+
+<ParamField path="id" type="string">
+  Optional venue ID to filter events
+</ParamField>
+
+```javascript EventsSlice.js:45-81
+export const fetchEvents = (id) => async (dispatch) => {
+  try {
+    const querySnapshot = id 
+      ? await Firestore.collection('events').where("venue_id", "==", id).get() 
+      : await Firestore.collection('events').get();
+
+    const EventsArray = querySnapshot.docs.map((doc) => {
+      const data = doc.data();
+      // Timestamp conversion logic...
+      return {
+        id: doc.id,
+        ...data,
+        date,
+        date_end,
+        date_start
+      };
+    });
+
+    dispatch(getEvents(EventsArray));
+  } catch (error) {
+    dispatch(hasError(error));
+  }
+};
+```
+
+#### fetchActiveEvents(id)
+
+Fetches only active events, optionally filtered by client ID.
+
+#### fetchClientEvents(id)
+
+Fetches all events for a specific client.
+
+<ParamField path="id" type="string" required>
+  Client ID to filter events
+</ParamField>
+
+## Tickets Slice
+
+Manages event ticket inventory and search.
+
+### State Shape
+
+```javascript TicketsSlice.js:5-9
+const initialState = {
+  Ticket: [],
+  TicketSearch: '',
+  error: ''
+};
+```
+
+<ResponseField name="Ticket" type="array" default="[]">
+  Array of ticket objects for the current event
+</ResponseField>
+
+<ResponseField name="TicketSearch" type="string" default="''">
+  Search query for filtering tickets
+</ResponseField>
+
+<ResponseField name="error" type="string" default="''">
+  Error message if ticket fetch fails
+</ResponseField>
+
+### Async Thunks
+
+#### fetchTicket(id)
+
+Fetches tickets for a specific event using the API.
+
+```javascript TicketsSlice.js:34-49
+export const fetchTicket = (id) => async (dispatch) => {
+  try {
+    const res = await tickets_list_event({ event_id: id });
+
+    const TicketArray = res.data.response.map((doc) => {
+      return {
+        ...doc,
+      };
+    });
+
+    dispatch(getTicket(TicketArray));
+  } catch (error) {
+    dispatch(hasError(error));
+  }
+};
+```
+
+<ParamField path="id" type="string" required>
+  Event ID to fetch tickets for
+</ParamField>
+
+## Transactions Slice
+
+Manages transaction data for order processing.
+
+### State Shape
+
+```javascript transactionsSlice.js:5-9
+const initialState = {
+    Transactions: [],
+    TransactionsSearch: '',
+    error: ''
+};
+```
+
+<ResponseField name="Transactions" type="array" default="[]">
+  Array of transaction objects
+</ResponseField>
+
+<ResponseField name="TransactionsSearch" type="string" default="''">
+  Search query for filtering transactions
+</ResponseField>
+
+<ResponseField name="error" type="string" default="''">
+  Error message if transactions fetch fails
+</ResponseField>
+
+### Async Thunks
+
+#### fetchTransactions(id)
+
+Fetches all transactions for a specific client.
+
+```javascript transactionsSlice.js:35-66
+export const fetchTransactions = (id) => async (dispatch) => {
+    try {
+        const querySnapshot = await Firestore.collection('orders_transactions')
+            .where('client_id', '==', id).get();
+
+        const TransactionsArray = querySnapshot.docs.map((doc) => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                ...data,
+            };
+        });
+
+        dispatch(getTransactions(TransactionsArray));
+    } catch (error) {
+        dispatch(hasError(error));
+    }
+};
+```
+
+<ParamField path="id" type="string" required>
+  Client ID to fetch transactions for
+</ParamField>
+
+## Offices Slice
+
+Manages box office data and selection state.
+
+### State Shape
+
+```javascript OfficesSlice.js:5-11
+const initialState = {
+  Offices: [],
+  SelectedOffice: null,
+  ActiveOffices: [],
+  OfficesSearch: '',
+  error: ''
+};
+```
+
+<ResponseField name="Offices" type="array" default="[]">
+  All office locations
+</ResponseField>
+
+<ResponseField name="SelectedOffice" type="object | null" default="null">
+  Currently selected office for operations
+</ResponseField>
+
+<ResponseField name="ActiveOffices" type="array" default="[]">
+  Offices with active status
+</ResponseField>
+
+<ResponseField name="OfficesSearch" type="string" default="''">
+  Search query for filtering offices
+</ResponseField>
+
+<ResponseField name="error" type="string" default="''">
+  Error message if offices fetch fails
+</ResponseField>
+
+### Actions
+
+#### setSelectedOffice
+
+Sets the currently active office for operations.
+
+```javascript OfficesSlice.js:25-27
+setSelectedOffice: (state, action) => {
+  state.SelectedOffice = action.payload;
+}
+```
+
+<ParamField path="payload" type="object | null" required>
+  Office object to set as selected, or null to clear selection
+</ParamField>
+
+### Async Thunks
+
+#### fetchOffices(id)
+
+Fetches offices for a specific client.
+
+#### fetchActiveOffices()
+
+Fetches all offices with active status.
+
+## Orders Slice
+
+Manages order data with support for multiple filtering contexts.
+
+### State Shape
+
+```javascript ordersSlice.js:5-11
+const initialState = {
+    Orders: [],
+    OrdersEvent: [],
+    OrdersOffice: [],
+    OrdersSearch: '',
+    error: ''
+};
+```
+
+<ResponseField name="Orders" type="array" default="[]">
+  All orders for a client
+</ResponseField>
+
+<ResponseField name="OrdersEvent" type="array" default="[]">
+  Orders filtered by event ID
+</ResponseField>
+
+<ResponseField name="OrdersOffice" type="array" default="[]">
+  Orders filtered by office ID
+</ResponseField>
+
+<ResponseField name="OrdersSearch" type="string" default="''">
+  Search query for filtering orders
+</ResponseField>
+
+<ResponseField name="error" type="string" default="''">
+  Error message if orders fetch fails
+</ResponseField>
+
+### Async Thunks
+
+#### fetchOrders(id)
+
+Fetches all orders for a client with transaction timestamp conversion.
+
+```javascript ordersSlice.js:45-81
+export const fetchOrders = (id) => async (dispatch) => {
+    try {
+        const querySnapshot = await Firestore.collection('orders')
+            .where('client_id', '==', id).get();
+
+        const ordersArray = querySnapshot.docs.map((doc) => {
+            const data = doc.data();
+            
+            // Convert timestamps
+            const convertTimestamp = (timestamp) => {
+                if (timestamp && timestamp.seconds) {
+                    const date = new Date(timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000);
+                    return moment(date).format('DD/MM/YYYY - hh:mm:ss a');
+                }
+                return null;
+            };
+
+            const date = {
+                created: convertTimestamp(data.date?.created),
+                updated: convertTimestamp(data.date?.updated),
+            };
+
+            data.transactions.map((transaction, i) => {
+                transaction.date = convertTimestamp(transaction.date)
+                data.transactions[i] = transaction;
+            })
+
+            return {
+                id: doc.id,
+                ...data,
+                date,
+            };
+        });
+
+        dispatch(getOrders(ordersArray));
+    } catch (error) {
+        dispatch(hasError(error));
+    }
+};
+```
+
+#### fetchOrdersEvents(id)
+
+Fetches orders for a specific event.
+
+<ParamField path="id" type="string" required>
+  Event ID to fetch orders for
+</ParamField>
+
+#### fetchOrdersOffice(id)
+
+Fetches orders for a specific office.
+
+<ParamField path="id" type="string" required>
+  Office ID to fetch orders for
+</ParamField>
+
+## Contracts Slice
+
+Manages contract documents and agreements.
+
+### State Shape
+
+```javascript ContractsSlice.js:5-9
+const initialState = {
+  Contracts: [],
+  ContractsSearch: '',
+  error: ''
+};
+```
+
+<ResponseField name="Contracts" type="array" default="[]">
+  Array of contract objects
+</ResponseField>
+
+<ResponseField name="ContractsSearch" type="string" default="''">
+  Search query for filtering contracts
+</ResponseField>
+
+<ResponseField name="error" type="string" default="''">
+  Error message if contracts fetch fails
+</ResponseField>
+
+### Async Thunks
+
+#### fetchContracts(id)
+
+Fetches contracts for a specific user.
+
+```javascript ContractsSlice.js:34-65
+export const fetchContracts = (id) => async (dispatch) => {
+  try {
+    const querySnapshot = await Firestore.collection('contracts')
+        .where('user_id', '==', id).get();
+
+    const ContractsArray = querySnapshot.docs.map((doc) => {
+      const data = doc.data();
+      // Timestamp conversion...
+      return {
+        id: doc.id,
+        ...data,
+        date,
+      };
+    });
+
+    dispatch(getContracts(ContractsArray));
+  } catch (error) {
+    dispatch(hasError(error));
+  }
+};
+```
+
+<ParamField path="id" type="string" required>
+  User ID to fetch contracts for
+</ParamField>
+
+## Payouts Slice
+
+Manages payout method configurations.
+
+### State Shape
+
+```javascript PayoutsSlice.js:6-11
+const initialState = {
+  Payouts: [],
+  ActivePayouts: [],
+  PayoutsSearch: '',
+  error: ''
+};
+```
+
+<ResponseField name="Payouts" type="array" default="[]">
+  All payout methods
+</ResponseField>
+
+<ResponseField name="ActivePayouts" type="array" default="[]">
+  Payout methods with active status
+</ResponseField>
+
+<ResponseField name="PayoutsSearch" type="string" default="''">
+  Search query for filtering payouts
+</ResponseField>
+
+<ResponseField name="error" type="string" default="''">
+  Error message if payouts fetch fails
+</ResponseField>
+
+### Async Thunks
+
+#### fetchPayouts(id)
+
+Fetches all payout methods for a user.
+
+```javascript PayoutsSlice.js:41-64
+export const fetchPayouts = (id) => async (dispatch) => {
+  try {
+    const querySnapshot = await Firestore.collection('payout_methods')
+        .doc(id).collection('methods').get();
+
+    const PayoutsArray = querySnapshot.docs.map((doc) => {
+      const data = doc.data();
+
+      const date = {
+        created: convertTimestamp(data.date?.created),
+        updated: convertTimestamp(data.date?.updated),
+      };
+
+      return {
+        id: doc.id,
+        ...data,
+        date,
+      };
+    });
+
+    dispatch(getPayouts(PayoutsArray));
+  } catch (error) {
+    dispatch(hasError(error));
+  }
+};
+```
+
+<ParamField path="id" type="string" required>
+  User ID to fetch payout methods for
+</ParamField>
+
+#### fetchActivePayouts(id)
+
+Fetches only active payout methods for a user.
+
+## Common Patterns
+
+All slices follow these consistent patterns:
+
+### Timestamp Conversion
+
+Firebase timestamps are automatically converted to readable date strings:
+
+```javascript
+const convertTimestamp = (timestamp) => {
+  if (timestamp && timestamp.seconds) {
+    const date = new Date(timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000);
+    return moment(date).format('DD/MM/YYYY - hh:mm:ss a');
+  }
+  return null;
+};
+```
+
+### Error Handling
+
+All async thunks include error handling:
+
+```javascript
+try {
+  // Fetch and process data
+  dispatch(getDataAction(data));
+} catch (error) {
+  dispatch(hasError(error));
+}
+```
+
+### Search Functionality
+
+Most slices include a search state for client-side filtering:
+
+```javascript
+SearchItems: (state, action) => {
+  state.ItemsSearch = action.payload;
+}
+```
+
+## Usage Examples
+
+### Fetching and Displaying Data
+
+```javascript
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchEvents } from './store/apps/events/EventsSlice';
+
+function EventsList() {
+  const dispatch = useDispatch();
+  const { Events, EventsSearch, error } = useSelector((state) => state.events);
+  
+  useEffect(() => {
+    dispatch(fetchEvents());
+  }, [dispatch]);
+  
+  const filteredEvents = Events.filter(event => 
+    event.name.toLowerCase().includes(EventsSearch.toLowerCase())
+  );
+  
+  if (error) return <div>Error: {error}</div>;
+  
+  return (
+    <div>
+      {filteredEvents.map(event => (
+        <EventCard key={event.id} event={event} />
+      ))}
+    </div>
+  );
+}
+```
+
+### Managing Office Selection
+
+```javascript
+import { useDispatch, useSelector } from 'react-redux';
+import { setSelectedOffice } from './store/apps/offices/OfficesSlice';
+
+function OfficeSelector() {
+  const dispatch = useDispatch();
+  const { Offices, SelectedOffice } = useSelector((state) => state.offices);
+  
+  const handleOfficeChange = (office) => {
+    dispatch(setSelectedOffice(office));
+  };
+  
+  return (
+    <select 
+      value={SelectedOffice?.id || ''}
+      onChange={(e) => {
+        const office = Offices.find(o => o.id === e.target.value);
+        handleOfficeChange(office);
+      }}
+    >
+      <option value="">Select Office</option>
+      {Offices.map(office => (
+        <option key={office.id} value={office.id}>
+          {office.name}
+        </option>
+      ))}
+    </select>
+  );
+}
+```
+
+### Searching and Filtering
+
+```javascript
+import { useDispatch, useSelector } from 'react-redux';
+import { SearchClients } from './store/apps/Users/ClientsSlice';
+
+function ClientSearch() {
+  const dispatch = useDispatch();
+  const { Clients, ClientsSearch } = useSelector((state) => state.clients);
+  
+  const handleSearch = (query) => {
+    dispatch(SearchClients(query));
+  };
+  
+  const filteredClients = Clients.filter(client =>
+    client.name.toLowerCase().includes(ClientsSearch.toLowerCase()) ||
+    client.email.toLowerCase().includes(ClientsSearch.toLowerCase())
+  );
+  
+  return (
+    <div>
+      <input
+        type="text"
+        value={ClientsSearch}
+        onChange={(e) => handleSearch(e.target.value)}
+        placeholder="Search clients..."
+      />
+      <ClientList clients={filteredClients} />
+    </div>
+  );
+}
+```

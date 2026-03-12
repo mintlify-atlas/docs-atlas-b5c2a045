@@ -1,0 +1,583 @@
+---
+title: Payment Processing
+description: Configure payment methods and process transactions securely
+icon: credit-card
+---
+
+## Overview
+
+Payment Processing in TradeMaster Transactions enables you to configure multiple payment methods, process customer transactions, and manage financial operations across your box offices and online sales channels.
+
+<Note>
+  TMT supports various payment methods including credit cards, debit cards, cash, bank transfers, and digital wallets, with multi-currency capabilities.
+</Note>
+
+## Payment Methods
+
+Payment methods define how customers can pay for tickets:
+
+<CardGroup cols={3}>
+  <Card title="Credit Cards" icon="credit-card">
+    Visa, Mastercard, American Express, and other credit card networks
+  </Card>
+  <Card title="Debit Cards" icon="money-check">
+    Direct debit from customer bank accounts
+  </Card>
+  <Card title="Cash" icon="money-bill">
+    Physical currency for in-person transactions
+  </Card>
+  <Card title="Bank Transfers" icon="building-columns">
+    Direct bank-to-bank transfers
+  </Card>
+  <Card title="Digital Wallets" icon="wallet">
+    PayPal, Apple Pay, Google Pay, and other digital payment services
+  </Card>
+  <Card title="Cryptocurrency" icon="bitcoin-sign">
+    Bitcoin, Ethereum, and other digital currencies
+  </Card>
+</CardGroup>
+
+## Accessing Payment Methods
+
+<Steps>
+  <Step title="Navigate to Payment Methods">
+    From the main menu, go to **Configuración** > **Métodos de Pago**
+  </Step>
+  <Step title="View Payment Methods Table">
+    The table displays all configured payment methods with their status and currency
+  </Step>
+  <Step title="Search and Filter">
+    Use the search bar to find specific payment methods by name or currency
+  </Step>
+</Steps>
+
+## Creating a Payment Method
+
+<Steps>
+  <Step title="Click Create Payment Method">
+    Click the **Crear Método de Pago** button in the top-right corner
+  </Step>
+  
+  <Step title="Enter Basic Information">
+    Fill in the payment method details:
+    
+    ```javascript
+    {
+      name: "Credit Card - Visa",
+      type: "Credit Card",
+      currency: "USD",
+      status: true
+    }
+    ```
+  </Step>
+  
+  <Step title="Configure Payment Gateway">
+    Set up integration details:
+    - API credentials
+    - Merchant ID
+    - Gateway endpoint
+    - Security certificates
+  </Step>
+  
+  <Step title="Link Custody Account">
+    Associate the payment method with a custody account for fund management:
+    
+    ```javascript
+    custody_account: {
+      account_id: "custody_123",
+      account_name: "Main Operating Account",
+      bank: "Bank Name",
+      account_number: "****1234"
+    }
+    ```
+  </Step>
+  
+  <Step title="Set Transaction Fees">
+    Configure any processing fees or percentages
+  </Step>
+  
+  <Step title="Activate and Save">
+    Set status to active and save the payment method
+  </Step>
+</Steps>
+
+<Warning>
+  Ensure all payment gateway credentials are stored securely. Never share API keys or merchant credentials via unsecured channels.
+</Warning>
+
+## Payment Method Configuration
+
+### Required Fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| Name | Text | Yes | Display name for the payment method |
+| Type | Dropdown | Yes | Category (Credit Card, Cash, Transfer, etc.) |
+| Currency | Dropdown | Yes | Supported currency (USD, MXN, EUR, etc.) |
+| Status | Boolean | Yes | Active/Inactive |
+| Custody Account | Reference | Yes | Linked bank account for deposits |
+| Processing Fee | Percentage | No | Transaction fee percentage |
+| Gateway Details | JSON | Conditional | Required for online payment methods |
+
+### Payment Method Types
+
+<CodeGroup>
+```javascript Credit Card Configuration
+{
+  name: "Visa/Mastercard",
+  type: "Credit Card",
+  method: "card",
+  gateway: {
+    provider: "Stripe",
+    public_key: "pk_live_...",
+    secret_key: "sk_live_...",
+    webhook_secret: "whsec_..."
+  },
+  currency: "USD",
+  processing_fee: 2.9 // percentage
+}
+```
+
+```javascript Cash Configuration
+{
+  name: "Cash - USD",
+  type: "Cash",
+  method: "cash",
+  currency: "USD",
+  custody_account: {
+    account_id: "custody_456",
+    requires_deposit: true
+  },
+  processing_fee: 0
+}
+```
+
+```javascript Bank Transfer Configuration
+{
+  name: "Bank Transfer - SPEI",
+  type: "Bank Transfer",
+  method: "transfer",
+  currency: "MXN",
+  bank_info: {
+    institution: "Banco Nacional",
+    clabe: "012345678901234567",
+    reference_format: "EVENT_ORDER"
+  },
+  processing_time: "24-48 hours"
+}
+```
+</CodeGroup>
+
+## Payment Methods Table
+
+The payment methods table provides an overview of all configured payment options:
+
+### Table Columns
+
+<Accordion title="Payment Method Name and Type">
+  - Displays payment method name with icon
+  - Shows payment type below the name (Credit Card, Cash, etc.)
+  
+  ```javascript
+  <IconWallet size="2rem" />
+  <Box>
+    <Typography variant="h6">{method.name}</Typography>
+    <Typography variant="subtitle2">{method.type}</Typography>
+  </Box>
+  ```
+</Accordion>
+
+<Accordion title="Currency">
+  Shows the currency supported by this payment method (USD, MXN, EUR, etc.)
+</Accordion>
+
+<Accordion title="Status Indicator">
+  Visual indicator showing if the payment method is active:
+  - 🟢 Green dot: Active and available for use
+  - 🔴 Red dot: Inactive and not available
+</Accordion>
+
+<Accordion title="Actions">
+  - **View Details**: Click the eye icon to open payment method details
+  - **Edit**: Modify payment method configuration
+  - **Deactivate**: Temporarily disable the payment method
+</Accordion>
+
+## Assigning Payment Methods to Offices
+
+Box offices need assigned payment methods to process transactions:
+
+### Adding Payment Methods to an Office
+
+<Steps>
+  <Step title="Open Office Configuration">
+    Navigate to the office you want to configure
+  </Step>
+  
+  <Step title="Select Payment Methods">
+    From the office form, choose which payment methods to enable:
+    
+    ```javascript
+    // Office payment methods configuration
+    payments_methods: [
+      {
+        payment_method_id: "pm_123",
+        name: "Credit Card - Visa",
+        currency: "USD",
+        custody_account: "custody_456",
+        method: "card",
+        percentage: 0 // Office-specific fee adjustment
+      },
+      {
+        payment_method_id: "pm_124",
+        name: "Cash - USD",
+        currency: "USD",
+        custody_account: "custody_456",
+        method: "cash",
+        percentage: 0
+      }
+    ]
+    ```
+  </Step>
+  
+  <Step title="Configure Office-Specific Settings">
+    Set any office-specific fees or adjustments
+  </Step>
+  
+  <Step title="Save Configuration">
+    Save the office configuration to activate the payment methods
+  </Step>
+</Steps>
+
+<Tip>
+  Different offices can have different payment methods. For example, virtual offices might only accept online payments, while physical offices can accept cash.
+</Tip>
+
+## Processing Transactions
+
+### Order Payment Flow
+
+<Steps>
+  <Step title="Calculate Order Total">
+    System calculates the total based on selected tickets:
+    
+    ```javascript
+    {
+      subtotal: 300.00,
+      service_fee: 15.00,
+      processing_fee: 9.14, // 2.9% of total
+      total: 324.14
+    }
+    ```
+  </Step>
+  
+  <Step title="Select Payment Method">
+    Ticket seller or customer selects available payment method
+  </Step>
+  
+  <Step title="Process Payment">
+    System processes payment based on method type:
+    - **Card**: Real-time gateway authorization
+    - **Cash**: Manual confirmation and receipt generation
+    - **Transfer**: Generate reference and await confirmation
+  </Step>
+  
+  <Step title="Create Order Record">
+    On successful payment, create order with payment details:
+    
+    ```javascript
+    {
+      order_id: "ORD-20240312-001",
+      amount: 324.14,
+      payment_method: "Credit Card - Visa",
+      payment_status: "completed",
+      transaction_id: "txn_abc123",
+      date: {
+        created: "2024-03-12T15:30:00"
+      }
+    }
+    ```
+  </Step>
+  
+  <Step title="Generate Receipt and Tickets">
+    Issue receipt and tickets with QR codes to customer
+  </Step>
+</Steps>
+
+### Transaction Status
+
+<CardGroup cols={2}>
+  <Card title="Completed" icon="circle-check" color="#2ecc71">
+    Payment successfully processed and confirmed
+  </Card>
+  <Card title="Pending" icon="clock" color="#f39c12">
+    Awaiting payment confirmation (common for bank transfers)
+  </Card>
+  <Card title="Failed" icon="circle-xmark" color="#e74c3c">
+    Payment declined or failed to process
+  </Card>
+  <Card title="Refunded" icon="rotate-left" color="#9b59b6">
+    Payment returned to customer
+  </Card>
+</CardGroup>
+
+## Orders Management
+
+View and manage all payment transactions:
+
+### Orders Table
+
+```javascript
+// Order data structure
+{
+  id: "order_123",
+  event_name: "Rock Concert 2024",
+  office_name: "Main Box Office",
+  amount: 324.14,
+  status: true, // Active order
+  date: {
+    created: "2024-03-12T15:30:00"
+  },
+  payment_method: "Credit Card - Visa",
+  tickets: [
+    { ticket_id: "A-12", price: 150.00 },
+    { ticket_id: "A-13", price: 150.00 }
+  ]
+}
+```
+
+### Viewing Order Details
+
+<Steps>
+  <Step title="Navigate to Orders">
+    Go to **Ventas** > **Órdenes** from the main menu
+  </Step>
+  
+  <Step title="Search for Order">
+    Use the search bar to find orders by event name, amount, or date
+  </Step>
+  
+  <Step title="Click Order">
+    Click the eye icon or anywhere on the row to view order details
+  </Step>
+  
+  <Step title="View Transaction Information">
+    See complete payment details including:
+    - Payment method used
+    - Transaction ID
+    - Processing fees
+    - Customer information
+    - Ticket details
+    - Receipt and invoice
+  </Step>
+</Steps>
+
+## Payment Reconciliation
+
+Reconcile payments with bank deposits and financial records:
+
+### Custody Accounts
+
+Custody accounts track where payment funds are deposited:
+
+```javascript
+{
+  custody_account_id: "custody_123",
+  name: "Main Operating Account",
+  bank: "Bank Name",
+  account_number: "****1234",
+  currency: "USD",
+  balance: 125600.00,
+  transactions: [
+    {
+      date: "2024-03-12",
+      description: "Ticket Sales - Concert",
+      amount: 324.14,
+      order_id: "ORD-20240312-001"
+    }
+  ]
+}
+```
+
+### Reconciliation Process
+
+<Steps>
+  <Step title="Export Transaction Report">
+    Generate a report of all transactions for a date range
+  </Step>
+  
+  <Step title="Compare with Bank Statement">
+    Match reported transactions with bank deposits
+  </Step>
+  
+  <Step title="Identify Discrepancies">
+    Flag any missing or mismatched transactions
+  </Step>
+  
+  <Step title="Resolve Issues">
+    Investigate and resolve any discrepancies found
+  </Step>
+</Steps>
+
+<Note>
+  TMT includes a reconciliation module that helps automate the comparison between system records and bank statements.
+</Note>
+
+## Refund Processing
+
+### Issuing Refunds
+
+<Steps>
+  <Step title="Locate Original Order">
+    Find the order that needs to be refunded
+  </Step>
+  
+  <Step title="Verify Refund Eligibility">
+    Check event policy and refund window
+  </Step>
+  
+  <Step title="Initiate Refund">
+    Click the refund button and enter refund details:
+    - Full or partial refund
+    - Reason for refund
+    - Refund amount
+  </Step>
+  
+  <Step title="Process Payment Reversal">
+    System processes refund through original payment method:
+    - **Card**: Automatic gateway reversal
+    - **Cash**: Generate refund voucher for customer
+    - **Transfer**: Initiate return bank transfer
+  </Step>
+  
+  <Step title="Cancel Tickets">
+    Tickets are marked as cancelled and returned to inventory
+  </Step>
+</Steps>
+
+<Warning>
+  Refunds typically take 5-10 business days to appear in customer accounts. Processing times vary by payment method and banking institution.
+</Warning>
+
+## Multi-Currency Support
+
+TMT supports transactions in multiple currencies:
+
+### Currency Configuration
+
+```javascript
+// Supported currencies
+const currencies = [
+  { code: "USD", symbol: "$", name: "US Dollar" },
+  { code: "MXN", symbol: "$", name: "Mexican Peso" },
+  { code: "EUR", symbol: "€", name: "Euro" },
+  { code: "GBP", symbol: "£", name: "British Pound" },
+  { code: "CAD", symbol: "$", name: "Canadian Dollar" }
+];
+```
+
+### Currency Exchange
+
+<Tip>
+  When processing payments in different currencies, exchange rates are applied automatically based on current market rates.
+</Tip>
+
+## Security Best Practices
+
+<CardGroup cols={2}>
+  <Card title="PCI Compliance" icon="shield-halved">
+    Ensure all card payment processing meets PCI DSS standards
+  </Card>
+  <Card title="Encryption" icon="lock">
+    All payment data is encrypted in transit and at rest
+  </Card>
+  <Card title="Tokenization" icon="hashtag">
+    Card numbers are tokenized and never stored in plain text
+  </Card>
+  <Card title="Secure Credentials" icon="key">
+    API keys and secrets are stored in secure environment variables
+  </Card>
+  <Card title="Access Control" icon="user-shield">
+    Limit payment method configuration to authorized users only
+  </Card>
+  <Card title="Audit Logs" icon="file-lines">
+    All payment transactions are logged for audit purposes
+  </Card>
+</CardGroup>
+
+## Reporting and Analytics
+
+### Payment Reports
+
+Generate comprehensive payment reports:
+
+<Accordion title="Daily Sales Report">
+  Total sales by payment method for a specific day
+  
+  ```javascript
+  {
+    date: "2024-03-12",
+    total_sales: 12450.00,
+    by_method: [
+      { method: "Credit Card", amount: 8900.00, count: 67 },
+      { method: "Cash", amount: 2350.00, count: 28 },
+      { method: "Bank Transfer", amount: 1200.00, count: 5 }
+    ]
+  }
+  ```
+</Accordion>
+
+<Accordion title="Event Sales Summary">
+  Total revenue for a specific event broken down by payment method
+</Accordion>
+
+<Accordion title="Office Performance">
+  Sales totals for each box office showing payment method usage
+</Accordion>
+
+<Accordion title="Transaction Fees Report">
+  Summary of all processing fees charged by payment gateways
+</Accordion>
+
+## Troubleshooting
+
+<Accordion title="Payment method not appearing at checkout">
+  1. Verify the payment method status is "Active"
+  2. Check that the payment method is assigned to the office
+  3. Confirm the currency matches the ticket price currency
+  4. Ensure the payment gateway credentials are valid
+</Accordion>
+
+<Accordion title="Transaction declined">
+  1. Verify customer has sufficient funds
+  2. Check for correct card details entry
+  3. Ensure payment gateway is operational
+  4. Review fraud detection rules that might be blocking the transaction
+  5. Try an alternative payment method
+</Accordion>
+
+<Accordion title="Refund not processing">
+  1. Verify original transaction was completed
+  2. Check that refund window hasn't expired
+  3. Confirm payment gateway supports refunds
+  4. Ensure custody account has sufficient balance
+  5. Review refund policy restrictions
+</Accordion>
+
+<Accordion title="Currency mismatch error">
+  1. Check that payment method supports the ticket currency
+  2. Verify exchange rate configuration is correct
+  3. Ensure custody account accepts the currency
+  4. Update payment method currency settings if needed
+</Accordion>
+
+## Related Features
+
+<CardGroup cols={2}>
+  <Card title="Office Operations" icon="building" href="/features/office-operations">
+    Configure payment methods for each box office
+  </Card>
+  <Card title="Ticket Sales" icon="ticket" href="/features/ticket-sales">
+    Process ticket sales using configured payment methods
+  </Card>
+</CardGroup>

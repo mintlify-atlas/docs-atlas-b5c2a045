@@ -1,0 +1,408 @@
+---
+title: Event Management
+description: Create, configure, and manage events from setup to completion
+icon: calendar-days
+---
+
+## Overview
+
+Event Management is the core feature of TradeMaster Transactions, enabling clients to create and manage events from initial setup through to completion. The platform supports various event types including concerts, sports events, theater performances, and more.
+
+<Note>
+  Events in TMT go through multiple lifecycle stages: Instanciado (Instantiated), Activo (Active), En Progreso (In Progress), and Finalizado (Completed).
+</Note>
+
+## Accessing Events
+
+<Steps>
+  <Step title="Navigate to Events">
+    From the main dashboard, click **Eventos** in the navigation menu
+  </Step>
+  <Step title="View Your Events">
+    The events table displays all events for your client account, filtered automatically by your user ID
+  </Step>
+  <Step title="Search and Filter">
+    Use the search bar to find events by name, venue, or status
+  </Step>
+</Steps>
+
+## Creating a New Event
+
+### Prerequisites
+
+Before creating an event, ensure you have:
+
+<CardGroup cols={2}>
+  <Card title="Event Venue" icon="location-dot">
+    At least one event venue must be configured in the system
+  </Card>
+  <Card title="Contracts" icon="file-contract">
+    Valid contracts and legal agreements for the event
+  </Card>
+  <Card title="Client Account" icon="user-check">
+    An active client account with appropriate permissions
+  </Card>
+  <Card title="Financial Setup" icon="dollar-sign">
+    Legal contract with financial configuration details
+  </Card>
+</CardGroup>
+
+### Event Creation Workflow
+
+<Steps>
+  <Step title="Start Event Creation">
+    Click the **Crear Evento** button in the top-right corner of the Events page
+  </Step>
+  
+  <Step title="Enter Basic Information">
+    Fill in the primary event details:
+    
+    ```javascript
+    // Required event data
+    {
+      name: "Event Name",
+      description: "Full event description",
+      type: "Concierto", // Concert, Sports, Theater, etc.
+      client: { id: "client_id", name: "Client Name" },
+      date_start: "2024-06-15T20:00:00",
+      date_end: "2024-06-15T23:59:00"
+    }
+    ```
+  </Step>
+  
+  <Step title="Select Venue and Contracts">
+    Choose the event venue and associated contracts:
+    - **Event Venue**: Physical or virtual location with maximum capacity
+    - **Contracts**: One or more service contracts (artist, venue, equipment)
+    - **Legal Contract**: Primary financial and legal agreement
+  </Step>
+  
+  <Step title="Configure Event Metadata">
+    Add event-specific information:
+    - **Main Activity**: Primary performer or attraction
+    - **Secondary Activity**: Supporting acts or additional features
+    - **Terms and Conditions**: Event-specific rules and policies
+    - **Event Description**: Detailed information for ticket buyers
+  </Step>
+  
+  <Step title="Upload Event Banner">
+    Upload a banner image for the event:
+    - Recommended size: 2500x900 pixels
+    - Supported formats: JPG, PNG, GIF
+    - Maximum file size: 2MB
+  </Step>
+  
+  <Step title="Review and Save">
+    Review all information and click **Guardar** to create the event
+  </Step>
+</Steps>
+
+<Warning>
+  All fields marked as required must be completed before you can save the event. Missing fields will display validation errors.
+</Warning>
+
+## Event Form Fields
+
+### Basic Information
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| Name | Text | Yes | Event display name |
+| Description | Text Area | Yes | Full event description |
+| Event Type | Dropdown | Yes | Concert, Sports, Theater, etc. |
+| Main Activity | Text | Yes | Primary performer/attraction |
+| Secondary Activity | Text | Yes | Supporting acts |
+| Date Start | DateTime | Yes | Event start date and time |
+| Date End | DateTime | Yes | Event end date and time |
+
+### Relationships
+
+<CodeGroup>
+```javascript Event-Client Relationship
+// Each event is linked to a client
+eventData.client_id = values.client.id;
+eventData.client_name = values.client.name;
+```
+
+```javascript Event-Venue Relationship
+// Event inherits venue capacity
+eventData.venue_id = values.event_venue.id;
+eventData.venue_name = values.event_venue.name;
+eventData.venue_max_capacity = values.event_venue.max;
+```
+
+```javascript Event-Contracts Relationship
+// Multiple contracts can be associated
+eventData.contracts = selectedContracts; // Array of contract IDs
+eventData.contract_legal = values.contract_legal.id;
+```
+</CodeGroup>
+
+### Event Metadata Structure
+
+```javascript
+type_metadata: {
+  main_activity: "Rock Band Name",
+  secondary_activity: "Opening Act Name",
+  description: "Full artist/event description",
+  tos: "Terms and conditions text"
+}
+```
+
+## Event Status Lifecycle
+
+Events progress through several status stages:
+
+<Steps>
+  <Step title="Instanciado (Instantiated)">
+    <Card color="#ffc107">
+      Event has been created but is not yet active. Tickets cannot be sold.
+      
+      **Available Actions:**
+      - Edit event details
+      - Configure ticket types and zones
+      - Set up pricing
+      - Activate the event
+    </Card>
+  </Step>
+  
+  <Step title="Activo (Active)">
+    <Card color="#2ecc71">
+      Event is live and tickets can be sold. This is the primary operational state.
+      
+      **Available Actions:**
+      - View and manage ticket sales
+      - Process orders
+      - Monitor real-time statistics
+      - Generate reports
+    </Card>
+  </Step>
+  
+  <Step title="En Progreso (In Progress)">
+    <Card color="#2196f3">
+      Event is currently happening. Typically used for day-of-event operations.
+      
+      **Available Actions:**
+      - Scan and validate tickets
+      - Handle at-door sales
+      - Monitor attendance
+      - Manage access control
+    </Card>
+  </Step>
+  
+  <Step title="Finalizado (Completed)">
+    <Card color="#9e9e9e">
+      Event has concluded. No further sales are possible.
+      
+      **Available Actions:**
+      - View final reports
+      - Process refunds
+      - Export data
+      - Archive event
+    </Card>
+  </Step>
+</Steps>
+
+## Events Table Interface
+
+The events table provides a comprehensive view of all your events:
+
+### Table Columns
+
+<Accordion title="Event Name and Image">
+  - Displays event name with banner thumbnail
+  - Shows event type below the name
+  - Click anywhere on the row to view event details
+  
+  ```javascript
+  // Event name cell structure
+  <Avatar src={event.media[0]} alt={event.name} />
+  <Box>
+    <Typography variant="subtitle1">{event.name}</Typography>
+    <Typography variant="body2">{event.type}</Typography>
+  </Box>
+  ```
+</Accordion>
+
+<Accordion title="Date and Time">
+  Shows the event start date in a readable format. Sort by this column to view chronologically.
+</Accordion>
+
+<Accordion title="Status Indicator">
+  Color-coded status chip:
+  - 🟡 Yellow: Instanciado
+  - 🟢 Green: Activo
+  - 🔵 Blue: En Progreso
+  - ⚪ Gray: Finalizado
+</Accordion>
+
+<Accordion title="Last Action">
+  Displays the most recent action from the event ledger:
+  - Action description (e.g., "Creado", "Activado")
+  - Timestamp of the action
+  
+  ```javascript
+  const lastAction = event.ledger[event.ledger.length - 1];
+  // { action: "Creado", date: "2024-03-12T10:30:00" }
+  ```
+</Accordion>
+
+<Accordion title="Venue Name">
+  Shows the name of the venue where the event takes place. Helps identify location at a glance.
+</Accordion>
+
+### Table Actions
+
+<CardGroup cols={3}>
+  <Card title="Search" icon="magnifying-glass">
+    Search events by name, venue name, status, or date
+  </Card>
+  <Card title="Filter" icon="filter">
+    Apply advanced filters to narrow down the event list
+  </Card>
+  <Card title="Export" icon="download">
+    Download event data as CSV for external analysis
+  </Card>
+  <Card title="Sort" icon="arrow-down-a-z">
+    Click column headers to sort by that field
+  </Card>
+  <Card title="View Details" icon="eye">
+    Click the eye icon or anywhere on the row to open event details
+  </Card>
+  <Card title="Pagination" icon="list-ol">
+    Navigate through events with 10, 15, or 20 per page
+  </Card>
+</CardGroup>
+
+## Event Detail View
+
+Clicking on an event opens the detailed view with multiple sections:
+
+### Event Information Tab
+
+- **Event Details**: Name, description, dates, and status
+- **Venue Information**: Location, capacity, and contact details
+- **Financial Setup**: Pricing, fees, and payment distribution
+- **Contracts**: All associated contracts and legal documents
+
+### Tickets Tab
+
+Manage ticket inventory and pricing:
+
+<Steps>
+  <Step title="Create Ticket Types">
+    Define different ticket categories (VIP, General Admission, etc.)
+  </Step>
+  <Step title="Configure Zones">
+    Set up venue sections with pricing and capacity
+  </Step>
+  <Step title="Set Colors">
+    Assign colors to zones for visual identification
+  </Step>
+  <Step title="Generate Tickets">
+    Create the actual ticket inventory for sale
+  </Step>
+</Steps>
+
+### Sales and Orders
+
+Monitor ticket sales in real-time:
+
+```javascript
+// Real-time sales data
+{
+  total_tickets: 1500,
+  sold_tickets: 892,
+  available_tickets: 608,
+  revenue: 125600.00,
+  orders: 324
+}
+```
+
+### Event Ledger
+
+View a complete history of all actions taken on the event:
+
+```javascript
+ledger: [
+  { action: "Creado", date: "2024-01-15T10:00:00", user: "admin@example.com" },
+  { action: "Activado", date: "2024-01-20T14:30:00", user: "admin@example.com" },
+  { action: "Primera Venta", date: "2024-01-20T15:45:00", user: "seller1@example.com" }
+]
+```
+
+## Event Security
+
+Each event has a security configuration for QR code validation:
+
+```javascript
+// Generated secret key for ticket validation
+const key = generateSecretKey(); // 32-byte random key
+await Firestore.collection(`events/${eventId}/security`)
+  .doc('qr-pin').set({ data: key });
+```
+
+<Tip>
+  The QR code secret is automatically generated when an event is created and is used to verify ticket authenticity at entry points.
+</Tip>
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Plan Ahead" icon="calendar-plus">
+    Create events well in advance to allow time for marketing and ticket sales
+  </Card>
+  <Card title="Complete Information" icon="clipboard-check">
+    Fill in all event details thoroughly to provide clear information to ticket buyers
+  </Card>
+  <Card title="High-Quality Images" icon="image">
+    Use professional banner images at the recommended resolution
+  </Card>
+  <Card title="Accurate Dates" icon="clock">
+    Double-check event dates and times before activating
+  </Card>
+  <Card title="Contract Management" icon="file-signature">
+    Ensure all contracts are finalized before creating the event
+  </Card>
+  <Card title="Venue Capacity" icon="users">
+    Verify venue maximum capacity matches ticket inventory
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+<Accordion title="Cannot save event">
+  1. Check that all required fields are filled
+  2. Verify the event end date is after the start date
+  3. Ensure you have selected at least one contract
+  4. Confirm the banner image is under 2MB
+  5. Check that the venue has available capacity
+</Accordion>
+
+<Accordion title="Event not appearing in list">
+  1. Verify you are logged in with the correct client account
+  2. Check if filters are hiding the event
+  3. Confirm the event was successfully created (check for success message)
+  4. Try refreshing the page
+</Accordion>
+
+<Accordion title="Cannot activate event">
+  1. Ensure ticket types and zones are configured
+  2. Verify all financial setup is complete
+  3. Check that the event date hasn't passed
+  4. Confirm you have activation permissions
+</Accordion>
+
+## Related Features
+
+<CardGroup cols={2}>
+  <Card title="Ticket Sales" icon="ticket" href="/features/ticket-sales">
+    Configure ticket types and manage sales for your events
+  </Card>
+  <Card title="Office Operations" icon="building" href="/features/office-operations">
+    Set up box offices to sell tickets for your events
+  </Card>
+  <Card title="Payment Processing" icon="credit-card" href="/features/payment-processing">
+    Configure payment methods for ticket purchases
+  </Card>
+</CardGroup>

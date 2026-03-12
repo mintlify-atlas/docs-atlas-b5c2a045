@@ -1,0 +1,573 @@
+---
+title: 'Platform Settings'
+description: 'Configure system-wide settings for TradeMaster Transactions'
+icon: 'gear'
+---
+
+## Overview
+
+Platform Settings in TradeMaster Transactions allow administrators to configure system-wide parameters that affect all users and events. These settings include exchange rates, costs, payment types, and general platform configurations.
+
+## Settings Architecture
+
+### Data Storage
+
+Platform settings are stored in Firestore under the `data` collection with different document types:
+
+```
+data/
+  ├── exchange_rates       # Currency exchange rates
+  ├── fixed_costs          # Fixed operational costs
+  ├── variable_costs       # Variable costs per transaction
+  ├── general_settings     # General platform configuration
+  └── payment_types/       # Payment method configurations
+      └── payment_data/    # Individual payment methods
+```
+
+### Redux State Management
+
+Settings are loaded into Redux state for application-wide access:
+
+```javascript store/setup/SetupSlice.js
+const initialState = {
+  Setup: {},
+};
+
+export const fetchSetup = () => async (dispatch) => {
+  try {
+    const query = await Firestore.collection('data').get();
+    const query2 = await Firestore.collection('data/payment_types/payment_data').get();
+    
+    let DataFinal = {};
+    let PaymentFinal = [];
+    
+    // Process main settings
+    query.docs.forEach((doc) => {
+      DataFinal[doc.id] = doc.data();
+    });
+    
+    // Process payment types
+    query2.docs.forEach((doc) => {
+      PaymentFinal.push(doc.data());
+    });
+    
+    DataFinal.payment_data = PaymentFinal;
+    dispatch(getSetup(DataFinal));
+  } catch (error) {
+    dispatch(hasError(error));
+  }
+};
+```
+
+## Exchange Rates
+
+### Exchange Rate Configuration
+
+Manage currency conversion rates for international transactions:
+
+```json data/exchange_rates
+{
+  "USD_to_VES": 36.50,
+  "EUR_to_VES": 39.75,
+  "USD_to_EUR": 0.92,
+  "date": {
+    "last_update": Timestamp
+  },
+  "source": "Central Bank",
+  "auto_update": true
+}
+```
+
+### Timestamp Conversion
+
+Exchange rate timestamps are converted for display:
+
+```javascript
+const convertTimestamp = (timestamp) => {
+  if (timestamp && timestamp.seconds) {
+    const date = new Date(
+      timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000
+    );
+    return moment(date).format('DD/MM/YYYY - hh:mm:ss a');
+  }
+  return null;
+};
+
+data.date.last_update = convertTimestamp(data.date.last_update);
+```
+
+### Exchange Rate Features
+
+<CardGroup cols={2}>
+  <Card title="Manual Updates" icon="pen-to-square">
+    Administrators can manually set exchange rates when needed.
+  </Card>
+  
+  <Card title="Auto-Update" icon="arrows-rotate">
+    Configure automatic updates from external exchange rate APIs.
+  </Card>
+  
+  <Card title="Historical Rates" icon="clock-rotate-left">
+    Maintain history of exchange rates for accurate historical reporting.
+  </Card>
+  
+  <Card title="Multi-Currency" icon="money-bill-transfer">
+    Support for multiple currency pairs and conversions.
+  </Card>
+</CardGroup>
+
+## Cost Configuration
+
+### Fixed Costs
+
+Costs that remain constant regardless of transaction volume:
+
+```json data/fixed_costs
+{
+  "platform_maintenance": 500.00,
+  "server_hosting": 150.00,
+  "license_fees": 200.00,
+  "support_staff": 3000.00,
+  "currency": "USD",
+  "billing_period": "monthly"
+}
+```
+
+### Variable Costs
+
+Costs that vary with transaction volume:
+
+```json data/variable_costs
+{
+  "payment_processing_fee": 0.029,  // 2.9%
+  "per_ticket_fee": 0.50,
+  "currency_conversion_fee": 0.015,  // 1.5%
+  "sms_notification_cost": 0.05,
+  "email_notification_cost": 0.001
+}
+```
+
+### Cost Calculation Example
+
+```javascript
+const calculateTotalCost = (ticketPrice, quantity, setup) => {
+  const subtotal = ticketPrice * quantity;
+  
+  // Variable costs
+  const processingFee = subtotal * setup.variable_costs.payment_processing_fee;
+  const perTicketFee = quantity * setup.variable_costs.per_ticket_fee;
+  const notificationCost = quantity * (setup.variable_costs.sms_notification_cost + 
+                                       setup.variable_costs.email_notification_cost);
+  
+  const totalCost = subtotal + processingFee + perTicketFee + notificationCost;
+  
+  return {
+    subtotal,
+    processingFee,
+    perTicketFee,
+    notificationCost,
+    total: totalCost
+  };
+};
+```
+
+## Payment Types
+
+### Payment Method Structure
+
+Each payment method has detailed configuration:
+
+```json data/payment_types/payment_data/{payment_id}
+{
+  "name": "Credit Card",
+  "code": "CC",
+  "enabled": true,
+  "provider": "Stripe",
+  "fees": {
+    "percentage": 2.9,
+    "fixed": 0.30
+  },
+  "supported_currencies": ["USD", "EUR", "VES"],
+  "min_amount": 1.00,
+  "max_amount": 10000.00,
+  "countries": ["US", "VE", "CO"],
+  "date": {
+    "created": Timestamp,
+    "updated": Timestamp
+  }
+}
+```
+
+### Supported Payment Methods
+
+<Tabs>
+  <Tab title="Digital Payments">
+    - Credit/Debit Cards (Visa, Mastercard, Amex)
+    - PayPal
+    - Digital Wallets (Zelle, Pago Móvil)
+    - Cryptocurrency (Bitcoin, USDT)
+  </Tab>
+  
+  <Tab title="Bank Transfers">
+    - Wire Transfer
+    - ACH Transfer
+    - Local Bank Transfer
+    - International SWIFT
+  </Tab>
+  
+  <Tab title="Cash & In-Person">
+    - Cash at Box Office
+    - Point of Sale (POS)
+    - Mobile POS
+    - Ticket Office Payment
+  </Tab>
+</Tabs>
+
+### Adding New Payment Methods
+
+<Steps>
+  <Step title="Navigate to Payment Settings">
+    Access Platform Settings > Payment Types
+  </Step>
+  
+  <Step title="Add Payment Method">
+    Click "Add Payment Method" and enter details
+  </Step>
+  
+  <Step title="Configure Provider">
+    Set up integration with payment provider (API keys, webhooks)
+  </Step>
+  
+  <Step title="Set Fees and Limits">
+    Define transaction fees, minimum/maximum amounts
+  </Step>
+  
+  <Step title="Test Integration">
+    Perform test transactions to verify configuration
+  </Step>
+  
+  <Step title="Enable for Users">
+    Activate the payment method for production use
+  </Step>
+</Steps>
+
+## General Settings
+
+### Platform Configuration
+
+```json data/general_settings
+{
+  "platform_name": "TradeMaster Transactions",
+  "company_name": "TradeMaster Inc.",
+  "support_email": "support@trademaster.com",
+  "support_phone": "+1-555-0123",
+  "default_language": "es",
+  "default_currency": "VES",
+  "default_timezone": "America/Caracas",
+  "ticket_expiry_hours": 72,
+  "max_tickets_per_order": 10,
+  "enable_refunds": true,
+  "refund_window_days": 7,
+  "maintenance_mode": false
+}
+```
+
+### Feature Flags
+
+Control feature availability across the platform:
+
+```javascript
+const featureFlags = {
+  enable_social_login: true,
+  enable_qr_tickets: true,
+  enable_seat_selection: true,
+  enable_waitlist: false,
+  enable_gift_tickets: true,
+  enable_group_discounts: true,
+  beta_features: {
+    nft_tickets: false,
+    ai_pricing: false,
+    virtual_events: true
+  }
+};
+```
+
+## Accessing Settings in Code
+
+### Using Redux Selector
+
+```javascript
+import { useSelector } from 'react-redux';
+
+function MyComponent() {
+  const setup = useSelector((state) => state.Setup.Setup);
+  
+  // Access exchange rates
+  const usdToVes = setup.exchange_rates?.USD_to_VES;
+  
+  // Access payment methods
+  const paymentMethods = setup.payment_data;
+  
+  // Access general settings
+  const platformName = setup.general_settings?.platform_name;
+  
+  return (
+    <div>
+      <h1>{platformName}</h1>
+      <p>Exchange Rate: {usdToVes}</p>
+    </div>
+  );
+}
+```
+
+### Loading Setup on Authentication
+
+Settings are automatically loaded when a user authenticates:
+
+```javascript guards/firebase/FirebaseContext.js
+firebase.auth().onAuthStateChanged(async (user) => {
+  if (user) {
+    // Load platform setup
+    dispatch(fetchSetup());
+    
+    // Then dispatch user auth state
+    dispatch(authStateChanged({
+      isAuthenticated: true,
+      user: userData
+    }));
+  }
+});
+```
+
+## Settings Management UI
+
+### Current Implementation
+
+The platform settings interface includes several tabs:
+
+<Tabs>
+  <Tab title="General">
+    Currently displays "Trabajo en progreso" (Work in progress)
+    
+    Future features:
+    - Company information
+    - Contact details
+    - Default configurations
+    - Feature flags
+  </Tab>
+  
+  <Tab title="Exchange Rates">
+    - View current rates
+    - Update manually or auto-sync
+    - Historical rate viewer
+    - Currency pair management
+  </Tab>
+  
+  <Tab title="Fixed Costs">
+    - Monthly operational costs
+    - License fees
+    - Hosting costs
+    - Staff costs
+  </Tab>
+  
+  <Tab title="Variable Costs">
+    - Transaction fees
+    - Processing costs
+    - Notification costs
+    - Currency conversion fees
+  </Tab>
+</Tabs>
+
+### Settings Component Structure
+
+```javascript components/pages/platform-setting/GeneralTab.js
+import React from 'react';
+import { CardContent, Grid, Typography, Box } from '@mui/material';
+
+const GeneralSettingsTab = () => {
+  return (
+    <Grid container spacing={3} mt={3} justifyContent="center">
+      <Grid xs={12} sm={8} lg={8}>
+        <Box bgcolor="primary.light" textAlign="center">
+          <CardContent>
+            <Typography variant="subtitle1" fontWeight={600}>
+              Trabajo en progreso
+            </Typography>
+          </CardContent>
+        </Box>
+      </Grid>
+    </Grid>
+  );
+};
+```
+
+## Updating Settings
+
+### Update Exchange Rates
+
+```javascript
+const updateExchangeRate = async (fromCurrency, toCurrency, rate) => {
+  const rateKey = `${fromCurrency}_to_${toCurrency}`;
+  
+  await Firestore.collection('data').doc('exchange_rates').update({
+    [rateKey]: rate,
+    'date.last_update': firebase.firestore.FieldValue.serverTimestamp(),
+    updated_by: currentUser.uid
+  });
+  
+  // Reload setup
+  dispatch(fetchSetup());
+};
+```
+
+### Update Payment Method
+
+```javascript
+const updatePaymentMethod = async (paymentId, updates) => {
+  await Firestore.collection('data/payment_types/payment_data')
+    .doc(paymentId)
+    .update({
+      ...updates,
+      'date.updated': firebase.firestore.FieldValue.serverTimestamp()
+    });
+  
+  // Reload setup
+  dispatch(fetchSetup());
+};
+```
+
+### Update General Settings
+
+```javascript
+const updateGeneralSettings = async (settings) => {
+  await Firestore.collection('data').doc('general_settings').set(
+    settings,
+    { merge: true }
+  );
+  
+  dispatch(fetchSetup());
+};
+```
+
+## Maintenance Mode
+
+### Enabling Maintenance Mode
+
+```javascript
+const setMaintenanceMode = async (enabled, message) => {
+  await Firestore.collection('data').doc('general_settings').update({
+    maintenance_mode: enabled,
+    maintenance_message: message,
+    maintenance_started: enabled ? 
+      firebase.firestore.FieldValue.serverTimestamp() : null
+  });
+};
+```
+
+### Checking Maintenance Mode
+
+```javascript
+function MaintenanceGuard({ children }) {
+  const setup = useSelector((state) => state.Setup.Setup);
+  
+  if (setup.general_settings?.maintenance_mode) {
+    return (
+      <MaintenancePage 
+        message={setup.general_settings.maintenance_message}
+      />
+    );
+  }
+  
+  return children;
+}
+```
+
+## Security Considerations
+
+<Warning>
+  **Critical Security Practices**
+  
+  - Only administrators should have access to platform settings
+  - Log all setting changes with user ID and timestamp
+  - Implement change approval workflow for critical settings
+  - Back up settings before making changes
+  - Test changes in staging before applying to production
+</Warning>
+
+### Firestore Security Rules
+
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /data/{document=**} {
+      // Only administrators can read
+      allow read: if request.auth != null &&
+        get(/databases/$(database)/documents/u_clients/$(request.auth.uid))
+          .data.account_type == 'Administrador';
+      
+      // Only administrators can write
+      allow write: if request.auth != null &&
+        get(/databases/$(database)/documents/u_clients/$(request.auth.uid))
+          .data.account_type == 'Administrador';
+    }
+  }
+}
+```
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Version Control" icon="code-branch">
+    Keep a history of settings changes to allow rollback if needed.
+  </Card>
+  
+  <Card title="Documentation" icon="book">
+    Document the purpose and impact of each setting.
+  </Card>
+  
+  <Card title="Testing" icon="vial">
+    Always test setting changes in a staging environment first.
+  </Card>
+  
+  <Card title="Monitoring" icon="chart-line">
+    Monitor the impact of setting changes on system performance.
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Settings Not Loading">
+    1. Check that user is authenticated
+    2. Verify `fetchSetup()` is called after authentication
+    3. Check Firestore permissions for `data` collection
+    4. Look for errors in browser console
+    5. Verify Redux store is properly configured
+  </Accordion>
+  
+  <Accordion title="Exchange Rates Not Updating">
+    1. Verify administrator permissions
+    2. Check for Firestore write errors
+    3. Ensure timestamp conversion is working
+    4. Verify API connection if using auto-update
+  </Accordion>
+  
+  <Accordion title="Payment Methods Not Appearing">
+    1. Check that payment_data subcollection exists
+    2. Verify payment methods have `enabled: true`
+    3. Ensure Redux state is updated after changes
+    4. Check for currency/country restrictions
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Authentication" icon="shield-check" href="/admin/authentication">
+    Set up secure authentication for your platform
+  </Card>
+  <Card title="Permissions" icon="key" href="/admin/permissions">
+    Configure role-based access control
+  </Card>
+</CardGroup>

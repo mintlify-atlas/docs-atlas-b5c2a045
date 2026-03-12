@@ -1,0 +1,362 @@
+---
+title: Configuring Venues
+description: Learn how to create and manage event venues in TradeMaster Transactions
+---
+
+Event venues are physical locations where events take place. Proper venue configuration ensures accurate capacity management and location information for events.
+
+## Venue Overview
+
+Venues in TMT store:
+- Location and address details
+- Maximum capacity
+- Venue type (Theater, Stadium, Convention Center, etc.)
+- Photos and media
+- Status (active/inactive)
+
+## Creating a Venue
+
+<Steps>
+
+### Navigate to Venues
+
+From the main menu, select **Venues** > **Event Venues** > **New Venue**.
+
+### Upload Venue Photo
+
+In the "Imagen de la Sala de Evento" section:
+
+1. Click **Cargar** to select a photo
+2. Choose a JPG, GIF, or PNG file (max 800KB)
+3. Preview the uploaded image
+4. Use **Reiniciar** to remove and replace if needed
+
+**Photo Tips:**
+- Use a representative image of the venue
+- Show the interior or main event space
+- Ensure good lighting and clarity
+- Avoid heavily edited or filtered images
+
+### Enter Venue Details
+
+In "Datos del Salon de Eventos":
+
+1. **Nombre**: Enter the venue name
+   - Use the official venue name
+   - Be consistent with public listings
+   - Example: "Teatro Teresa Carreño"
+
+2. **Capacidad Maxima**: Set maximum occupancy
+   - Enter total capacity number
+   - This is the absolute maximum allowed
+   - Consider safety regulations
+   - Account for staff and restricted areas
+
+<Warning>
+Maximum capacity must comply with local fire codes and safety regulations.
+</Warning>
+
+3. **Tipo de Sala de Evento**: Select venue type
+   - Options configured in system setup
+   - Examples: Teatro, Estadio, Centro de Convenciones, Auditorio
+   - Choose the type that best matches the venue
+
+4. **Descripción**: Write a venue description
+   - Describe the space and facilities
+   - Mention unique features
+   - Note accessibility options
+   - Include parking information
+   - Keep it informative but concise
+
+### Add Address Information
+
+In the "Dirección" section:
+
+1. **País**: Select the country
+   - Choose from available locations
+   - Determines regional settings
+
+2. **Ciudad**: Enter the city name
+   - Use proper capitalization
+   - Be specific (include district if needed)
+
+3. **Código Postal**: Enter postal/ZIP code
+   - Use the correct format for the country
+   - Helps with location services
+
+4. **Dirección Completa**: Enter full street address
+   - Include street name and number
+   - Add building or complex name if applicable
+   - Provide landmarks if helpful
+   - Example: "Av. Paseo Colón, Los Caobos, Caracas 1010"
+
+### Save the Venue
+
+1. Review all entered information
+2. Verify capacity is accurate
+3. Check address is complete and correct
+4. Click **Guardar** to create the venue
+
+The system will:
+- Create the venue record
+- Upload the venue photo to storage
+- Generate a unique venue ID
+- Set status to active
+- Display success notification
+
+</Steps>
+
+## Managing Existing Venues
+
+After creation, you can manage venues through the venues table:
+
+### Viewing Venue Details
+
+Click on any venue in the list to see:
+- **IntroCard**: Photo, name, description, capacity
+- **Location information**: Full address and contact details
+- **Associated events**: Past and upcoming events at this venue
+- **Contracts**: Venue rental or service contracts
+- **Revenue updates**: Financial performance of events at this venue
+- **Photos gallery**: Additional venue images
+- **Status**: Active or inactive
+
+### Editing Venue Information
+
+1. Navigate to the venue detail page
+2. Click the **Edit** button
+3. Update any fields that need changes
+4. Save your modifications
+
+<Note>
+Changing venue capacity affects future events only, not existing events.
+</Note>
+
+### Venue Status Management
+
+Toggle venue status:
+- **Active**: Available for new event assignments
+- **Inactive**: Hidden from venue selection but preserves data
+
+Use inactive status for:
+- Venues under renovation
+- Temporarily closed venues
+- Seasonal venues during off-season
+- Venues no longer in use but with historical data
+
+## Venue-Event Relationship
+
+When creating an event:
+- Select from active venues only
+- Venue capacity becomes event's maximum capacity
+- Venue address is used for event location
+- Venue name appears on tickets
+
+### Capacity Management
+
+The venue's maximum capacity is used to:
+- Validate total ticket creation
+- Prevent overselling across all zones
+- Calculate available seats
+- Warn when approaching capacity limits
+
+## Best Practices
+
+### Capacity Planning
+
+<Tip>
+**Set realistic capacity**: Account for emergency exits, restricted areas, and staff zones when setting maximum capacity.
+</Tip>
+
+- Consult venue's official capacity documents
+- Consider different seating configurations
+- Account for standing room vs. seated events
+- Reserve space for accessibility requirements
+- Factor in production and backstage areas
+
+### Address Accuracy
+
+- Use standardized address formats
+- Include helpful landmarks for navigation
+- Verify address with mapping services
+- Provide parking or transit information in description
+- Keep contact information current
+
+### Photo Quality
+
+- Upload high-resolution images
+- Show the venue from multiple angles
+- Capture the venue at its best
+- Update photos after renovations
+- Include accessibility features
+
+### Venue Types
+
+Choose appropriate venue types:
+- **Teatro**: Traditional theaters with seating
+- **Estadio**: Large sports stadiums
+- **Centro de Convenciones**: Convention centers and halls
+- **Auditorio**: Auditoriums and lecture halls
+- **Arena**: Indoor arenas for concerts/sports
+- **Al Aire Libre**: Outdoor venues and parks
+
+## Venue Zones and Layouts
+
+After creating a venue, configure:
+
+### Zone Configuration
+
+Define seating areas within the venue:
+- VIP sections
+- General admission areas
+- Balcony or mezzanine
+- Floor/standing areas
+- Special accessibility zones
+
+### Seating Charts
+
+For seated events:
+- Map seat rows and numbers
+- Define section boundaries
+- Mark accessibility seats
+- Identify obstructed view seats
+- Note premium locations
+
+### Standing Room
+
+For general admission:
+- Calculate safe standing capacity
+- Define queue or entry zones
+- Mark emergency exits
+- Plan crowd flow paths
+
+## Venue Detail Page Features
+
+### Profile Banner
+
+Displays:
+- Venue photo
+- Name and type
+- Location
+- Capacity
+- Status indicator
+
+### Intro Card
+
+Key information at a glance:
+- Description
+- Maximum capacity
+- Address
+- Status
+- Edit button (for authorized users)
+
+### Events Tab
+
+Shows:
+- Upcoming events at this venue
+- Past events history
+- Event performance metrics
+- Booking calendar
+
+### Contracts Card
+
+Displays:
+- Venue rental agreements
+- Service contracts
+- Insurance documentation
+- Maintenance agreements
+
+### Revenue Updates
+
+Tracks:
+- Total revenue from venue events
+- Event count and attendance
+- Average ticket prices
+- Performance trends
+
+## Troubleshooting
+
+### Cannot Save Venue
+
+**Issue**: Form validation prevents submission
+
+**Solutions**:
+- Check all required fields are filled:
+  - Name
+  - Maximum capacity
+  - Venue type
+  - Country
+  - City
+  - Postal code
+  - Full address
+  - Description
+- Ensure capacity is a valid number
+- Verify address is complete
+
+### Photo Upload Fails
+
+**Issue**: Venue image won't upload
+
+**Solutions**:
+- Check file size is under 800KB
+- Verify format is JPG, GIF, or PNG
+- Compress the image if too large
+- Try a different image file
+- Clear browser cache
+
+### Venue Not Appearing in Event Creation
+
+**Issue**: Venue doesn't show in dropdown when creating events
+
+**Solutions**:
+- Check venue status is "Active"
+- Verify venue was saved successfully
+- Refresh the event creation page
+- Confirm you have permission to view the venue
+- Check venue isn't deleted
+
+### Capacity Exceeded Warning
+
+**Issue**: System warns about capacity when creating tickets
+
+**Solutions**:
+- Review total tickets across all zones
+- Ensure zone capacities sum to less than venue max
+- Adjust individual zone capacities
+- Verify venue maximum capacity is correct
+- Account for reserved or comp tickets
+
+## Multi-Venue Management
+
+For organizations managing multiple venues:
+
+### Naming Conventions
+
+Use consistent naming:
+- Include city for multiple locations
+- Use official venue names
+- Add capacity in name if helpful
+- Example: "Teatro Teresa Carreño - Caracas (2,500)"
+
+### Venue Groups
+
+Organize by:
+- Location/city
+- Venue type
+- Capacity range
+- Owner/operator
+- Booking priority
+
+### Reporting
+
+Track venue performance:
+- Utilization rates
+- Revenue per venue
+- Popular event types
+- Seasonal patterns
+- Booking lead times
+
+## Related Resources
+
+- [Creating Events](/guides/creating-events) - Create events at your venues
+- [Processing Tickets](/guides/processing-tickets) - Manage capacity with tickets
